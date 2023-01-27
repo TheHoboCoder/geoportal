@@ -25,4 +25,4 @@ class Layer(models.Model):
 
 class RasterFeature(models.Model):
     name = models.SlugField(max_length=15)
-    r_file = gis_models.RasterField()
+    r_file = models.FilePathField()
