@@ -18,6 +18,6 @@ from django.urls import include, path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    #path('', include('geoportal_core.urls')),
+    path('core/', include('geoportal_core.urls')),
     path('module_template/', include('module_template.urls')),
 ]
