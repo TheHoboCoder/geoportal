@@ -1,6 +1,8 @@
 from django.urls import path
-from .base.base_views import get_commands
+from .base.base_urls import base_urls
 
 urlpatterns = [
-    path('get_commands', get_commands),
+   # custom_urls
 ] 
+
+urlpatterns.extend(base_urls)

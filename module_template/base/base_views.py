@@ -1,19 +1,26 @@
-from django.views import View
 from rest_framework.response import Response
+from rest_framework import status
+from django.views.decorators.http import require_GET
 from ..module_config import COMMANDS
+from rest_framework.generics import ListAPIView
+from .base_serializers import AreaSerializer, LayerSerializer
+from .base_models import Area, Layer
+from rest_framework.decorators import api_view, renderer_classes
 
-class CommandView(View):
-    # must set in subclass
-    serializer_class = None
-
-    def handler(self, validated_data):
-        pass
-
-    def get(self, request):
-        serializer = self.serializer_class(data=request.GET)
-        if serializer.is_valid(raise_exception=True):
-            # TODO: this
-            return Response(data=self.handler(serializer.validated_data))
-
+@api_view(('GET', ))
 def get_commands(request):
-    return Response(data=COMMANDS.keys())
+    return Response(data={k: {'alias': v.alias, 'description': v.description} for k, v in COMMANDS.items()})
+
+@api_view(('GET', ))
+def run_command(request, command_name):
+    if command_name not in COMMANDS:
+        return Response(data=['No such command'], status=status.HTTP_404_NOT_FOUND)
+    return COMMANDS[command_name].run(request)
+
+class ListAreaView(ListAPIView):
+    queryset = Area.objects.all()
+    serializer_class = AreaSerializer
+
+class ListLayerView(ListAPIView):
+    queryset = Layer.objects.all()
+    serializer_class = LayerSerializer
