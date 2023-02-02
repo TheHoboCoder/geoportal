@@ -15,9 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from geoportal_core.models import GISModule
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('core/', include('geoportal_core.urls')),
-    path('module_template/', include('module_template.urls')),
+    path('', include('geoportal_core.urls')),
 ]
+
+# for m in GISModule.objects.all():
+#     urlpatterns.append(m.name, include(f"{m.name}.urls"))

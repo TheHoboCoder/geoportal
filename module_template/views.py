@@ -1,9 +1,10 @@
 from django.shortcuts import render
-from .base.commands import CommandResponse, CommandView
+from common.commands import CommandResponse, CommandView
 from .serializers import SomeCommandSerializer
 
 class ExampleView(CommandView):
     serializer_class = SomeCommandSerializer
+    name="some_command"
     description = "Пример команды"
     alias = "Просто команда"
 

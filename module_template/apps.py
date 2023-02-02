@@ -1,5 +1,4 @@
 from django.apps import AppConfig
-from geoportal.geoserver import get_geoserver, install_module
 import os
 
 class ModuleTemplateConfig(AppConfig):

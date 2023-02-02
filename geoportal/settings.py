@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import os
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,6 +29,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+MEDIA_URL = 'media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+MODULE_PATH = os.path.join(MEDIA_ROOT, 'modules')
+if MODULE_PATH not in sys.path:
+    sys.path.insert(0, MODULE_PATH)
 
 # Application definition
 
@@ -39,11 +46,19 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'geoportal_core',
-    'module_template.apps.ModuleTemplateConfig',
     'django.contrib.gis',
     'rest_framework',
     'rest_framework_gis',
+    'module_template'
 ]
+
+# TODO: 
+with os.scandir(MODULE_PATH) as it:
+    for entry in it:
+        if entry.is_dir() and \
+            not entry.name.startswith('.') and \
+            not entry.name in INSTALLED_APPS:
+            INSTALLED_APPS.append(entry.name)
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -134,9 +149,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
-
-MEDIA_URL = 'media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field

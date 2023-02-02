@@ -21,12 +21,22 @@ class CommandView:
     serializer_class = None
     description = ""
     alias = ""
+    name = ""
 
     def handler(self, validated_data) -> CommandResponse:
         pass
+
+    def describe(self):
+        return {'alias': self.alias, 'description': self.description}
 
     def run(self, request):
         serializer = self.serializer_class(data=request.GET)
         if serializer.is_valid(raise_exception=True):
             response = self.handler(serializer.validated_data)
             return Response(data=response.serialize())
+
+
+class CommandList:
+    def __init__(self, commands):
+        self.commands = {command.name: command for command in commands}
+        self.description = {command.name: command.describe() for command in commands}
