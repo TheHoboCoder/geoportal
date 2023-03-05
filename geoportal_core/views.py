@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from rest_framework.generics import ListAPIView
 from . import models, serializers
-from .forms import GISModuleForm
+from .forms import CreateGISModuleForm
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.decorators import login_required 
 from rest_framework.response import Response
@@ -54,25 +54,6 @@ class LayerContentListView(ListAPIView):
             pass
 
         return features_filtered
-
-
-def create_module(request):
-    # TODO: redirect to login
-    if not request.user.is_authenticated:
-        return HttpResponse('must authorize', status=403)
-    if request.method == 'POST':
-        form = GISModuleForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save(owner=request.user)
-            return HttpResponseRedirect('create_succes/')
-
-    else:
-        form = GISModuleForm()
-
-    return render(request, 'geoportal_core/add_module.html', {'form': form})
-
-def on_created(request):
-    return HttpResponse('<b>Uploaded</b>')
 
 def get_module_config(module_name):
     gis_module = get_object_or_404(models.GISModule, name=module_name)

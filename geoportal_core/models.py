@@ -22,13 +22,14 @@ class GISModule(models.Model):
     @transaction.atomic
     def save(self, *args, **kwargs):
         super(GISModule, self).save()
-        importlib.invalidate_caches()
-        config = importlib.import_module(f"{self.name}.module_config", package=None)
-        schema = config.SCHEMA
-        for area in map(Area.from_po, schema.areas):
-            area.save()
-        for layer in map(Layer.from_po, schema.layers):
-            layer.save()
+        if self.pk is None:
+            importlib.invalidate_caches()
+            config = importlib.import_module(f"{self.name}.module_config", package=None)
+            schema = config.SCHEMA
+            for area in map(lambda t: Area.from_po(po=t, module=self), schema.areas):
+                area.save()
+            for layer in map(lambda t: Layer.from_po(po=t, module=self), schema.layers):
+                layer.save()
 
     class Meta:
         verbose_name = "модуль"
@@ -48,10 +49,10 @@ class Area(models.Model):
     alias = models.CharField(max_length=50)
     module = models.ForeignKey(GISModule, on_delete=models.CASCADE)
     # Point(xmin, ymin), Point(xmax, ymax)
-    bbox = gis_models.PolygonField()
+    bbox = gis_models.PolygonField(default=Polygon.from_bbox((33, 65, 35, 66)))
     objects = AreaManager()
 
-    @staticmethod
+    @classmethod
     def from_po(cls, po: c_models.AreaPO, module):
         return cls(name=po.name, 
                     module=module,
@@ -88,7 +89,7 @@ class Layer(models.Model):
     def is_vector(self):
         return self.layer_type == 'V'
 
-    @staticmethod
+    @classmethod
     def from_po(cls, po: c_models.LayerPO, module):
         return cls(name=po.name,
                     area=None if not po.area else Area.objects.get(name=po.area),
@@ -126,7 +127,7 @@ class VectorFeature(Feature):
     properties = models.JSONField()
     geometry = gis_models.GeometryCollectionField()
 
-    @staticmethod
+    @classmethod
     def from_po(cls, po: c_models.VectorFeaturePO, layer, area):
         return cls(name=po.name,
                    layer=layer, 

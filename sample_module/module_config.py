@@ -14,7 +14,7 @@ SCHEMA = Schema(
 
     areas=(AreaPO(name="main_area", 
                   alias="Основная область", 
-                  bbox=((33, 65), (35, 66))),
+                  bbox=(33, 65, 35, 66)),
            #other area
            ),
 

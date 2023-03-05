@@ -7,28 +7,38 @@ from django.core import management
 from collections import OrderedDict
 from django.db import transaction
 
-class GISModuleForm(forms.ModelForm):
+class EditGISModuleForm(forms.ModelForm):
+    class Meta:
+        model = GISModule
+        exclude = ['owner']
+
+class CreateGISModuleForm(forms.ModelForm):
     module_file = forms.FileField()
 
     class Meta:
         model = GISModule
         exclude = ['owner']
 
-    def save(self, owner, commit: bool = True):
+    def save(self, commit: bool = True):
         module_file = self.cleaned_data['module_file']
         del self.cleaned_data['module_file']
         model = super().save(commit=False)
-        model.owner = owner
-        if commit:
-            fullpath = os.path.join(settings.MODULE_PATH, self.cleaned_data['name'])
-            try:
-                unzip_file(module_file, self.cleaned_data['name'], fullpath)
-                model.save()
-            except Exception:
-                if os.path.exists(fullpath):
-                    shutil.rmtree(fullpath)
-                raise Exception
+        fullpath = get_module_path(self.cleaned_data['name'])
+        try:
+            unzip_file(module_file, fullpath)
+        except Exception:
+            if os.path.exists(fullpath):
+                shutil.rmtree(fullpath)
+            raise Exception
+        
         return model
+
+def get_module_path(module_name):
+    return os.path.join(settings.MODULE_PATH, module_name)
+
+def remove_module_dir(module_name):
+    if os.path.exists(get_module_path(module_name)):
+        shutil.rmtree(get_module_path(module_name))
 
 def unzip_file(file, fullpath):
 
