@@ -49,16 +49,17 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     'rest_framework',
     'rest_framework_gis',
-    'module_template'
 ]
 
+MODULES = []
 # TODO: 
 with os.scandir(MODULE_PATH) as it:
     for entry in it:
         if entry.is_dir() and \
             not entry.name.startswith('.') and \
-            not entry.name in INSTALLED_APPS:
-            INSTALLED_APPS.append(entry.name)
+            not entry.name in MODULES:
+            #INSTALLED_APPS.append(entry.name)
+            MODULES.append(entry.name)
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

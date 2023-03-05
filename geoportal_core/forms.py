@@ -6,7 +6,6 @@ from django.apps import apps
 from django.core import management
 from collections import OrderedDict
 from django.db import transaction
-import importlib
 
 class GISModuleForm(forms.ModelForm):
     module_file = forms.FileField()
@@ -23,7 +22,7 @@ class GISModuleForm(forms.ModelForm):
         if commit:
             fullpath = os.path.join(settings.MODULE_PATH, self.cleaned_data['name'])
             try:
-                save_file(module_file, self.cleaned_data['name'], fullpath)
+                unzip_file(module_file, self.cleaned_data['name'], fullpath)
                 model.save()
             except Exception:
                 if os.path.exists(fullpath):
@@ -31,7 +30,7 @@ class GISModuleForm(forms.ModelForm):
                 raise Exception
         return model
 
-def save_file(file, module_name, fullpath):
+def unzip_file(file, fullpath):
 
     try: 
         os.mkdir(fullpath)
@@ -52,7 +51,7 @@ def save_file(file, module_name, fullpath):
             outfile.write(zfobj.read(name))
             outfile.close()
     
-    install_module(module_name)
+    # install_module(module_name)
 
 def install_module(module_name):
     # TODO: dirty as hell

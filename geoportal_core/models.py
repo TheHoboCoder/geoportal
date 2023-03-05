@@ -1,10 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.gis.db import models as gis_models
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Point, Polygon, GeometryCollection
 import importlib
 from django.db import transaction
-
+import importlib
+from django.db.models import Q
+from common import models as c_models
+    
 class GISModule(models.Model):
     """ Модуль для установки
     """
@@ -22,25 +25,20 @@ class GISModule(models.Model):
         importlib.invalidate_caches()
         config = importlib.import_module(f"{self.name}.module_config", package=None)
         schema = config.SCHEMA
-        for area_po in schema.areas:
-            min_p, max_p = area_po.bbox
-            area = Area(name=area_po.name, 
-                        module=self,
-                        alias=area_po.alias, 
-                        point_min=Point(min_p),  
-                        point_max=Point(max_p))
+        for area in map(Area.from_po, schema.areas):
             area.save()
-        for layer_po in schema.layers:
-            layer = Layer(name=layer_po.name,
-                          alias=layer_po.alias,
-                          ordering=layer_po.ordering,
-                          module=self,
-                          layer_type='V' if layer_po.model_cls is not None else 'R')
+        for layer in map(Layer.from_po, schema.layers):
             layer.save()
-            if layer_po.model_cls is not None:
-                layer_index = VectorLayerIndex(layer=layer, model_name=layer_po.model_cls.__name__)
-                layer_index.save()
-       
+
+    class Meta:
+        verbose_name = "модуль"
+
+def get_areas(args):
+    return Q(module__name=args["module_name"])
+
+class AreaManager(models.Manager):
+    def path_filter(self, args):
+        return self.filter(get_areas(args)) 
         
 class Area(models.Model):
     """ Именнованая прямоугольная область на карте, к которой могут быть привязаны
@@ -50,11 +48,32 @@ class Area(models.Model):
     alias = models.CharField(max_length=50)
     module = models.ForeignKey(GISModule, on_delete=models.CASCADE)
     # Point(xmin, ymin), Point(xmax, ymax)
-    point_min = gis_models.PointField(default=Point(33, 65))
-    point_max = gis_models.PointField(default=Point(34, 66))
+    bbox = gis_models.PolygonField()
+    objects = AreaManager()
+
+    @staticmethod
+    def from_po(cls, po: c_models.AreaPO, module):
+        return cls(name=po.name, 
+                    module=module,
+                    alias=po.alias, 
+                    bbox=Polygon.from_bbox(po.bbox))
 
     class Meta:
         unique_together = ['name', 'module']
+
+def get_layers(args):
+    return get_areas(args) & (Q(area__name__isnull=True) | 
+                              Q(area__name=args["area_name"]))
+
+def get_layer_content(args):
+    return Q(name=args["layer_name"]) & get_layers(args)
+
+class LayerManager(models.Manager):
+    def path_filter(self, args):
+        return self.filter(get_layers(args))
+    
+    def path_get(self, args):
+        return self.get(get_layer_content(args))
 
 class Layer(models.Model):
     name = models.SlugField(max_length=15)
@@ -64,22 +83,60 @@ class Layer(models.Model):
     alias = models.CharField(max_length=50, blank=True)
     ordering = models.IntegerField(default=0)
     layer_type = models.CharField(max_length=1, choices=(('V', 'Vector'), ('R', 'Raster')), default='V')
+    objects = LayerManager()
+
+    def is_vector(self):
+        return self.layer_type == 'V'
+
+    @staticmethod
+    def from_po(cls, po: c_models.LayerPO, module):
+        return cls(name=po.name,
+                    area=None if not po.area else Area.objects.get(name=po.area),
+                    alias=po.alias,
+                    ordering=po.ordering,
+                    module=module,
+                    layer_type='V' if po.is_vector else 'R')
 
     class Meta:
         unique_together = ['name', 'module']
         ordering = ['ordering']
 
-class VectorLayerIndex(models.Model):
-    """Связывает векторный слой и название модели"""
-    layer = models.ForeignKey(Layer, on_delete=models.CASCADE) 
-    model_name = models.CharField(max_length=50)
-
-class RasterFeature(models.Model):
-    name = models.SlugField(max_length=15)
+class FeatureManager(models.Manager):
+    def filter_features(self, layer_name, area_name):
+        return self.filter(Q(layer__name=layer_name) &
+                        Q(area__name=area_name))
+    
+    def datetime_filter(self, queryset, datetime_start, datetime_end=None):
+        datetime_end = datetime_end if datetime_end is not None else datetime_start
+        return queryset.filter(Q(datetime__isnull=True) | 
+                           (Q(datetime__gte=datetime_start) &
+                            Q(datetime__lte=datetime_end)))
+    
+class Feature(models.Model):
+    name = models.CharField(max_length=50, blank=True)
     layer = models.ForeignKey(Layer, on_delete=models.CASCADE)
-    alias = models.CharField(max_length=50, blank=True)
-    raster_filepath = models.FilePathField()
+    area = models.ForeignKey(Area, on_delete=models.CASCADE)
+    datetime = models.DateTimeField(blank=True, null=True)
+    objects = FeatureManager()
 
+    class Meta:
+        abstract = True
+
+class VectorFeature(Feature):
+    properties = models.JSONField()
+    geometry = gis_models.GeometryCollectionField()
+
+    @staticmethod
+    def from_po(cls, po: c_models.VectorFeaturePO, layer, area):
+        return cls(name=po.name,
+                   layer=layer, 
+                   area=area, 
+                   datetime=po.datetime,
+                   properties=po.properties,
+                   geometry=GeometryCollection(po.geometry))
+
+class RasterFeature(Feature):
+    raster_filepath = models.FilePathField()
 
 
 

@@ -11,6 +11,7 @@ urlpatterns = [
     path('modules/<str:module_name>/commands/<str:command_name>/', views.run_command),
     path('modules/<str:module_name>/areas/', views.AreaListView.as_view()),
     path('modules/<str:module_name>/areas/<str:area_name>/', views.LayerListView.as_view()),
+    path('modules/<str:module_name>/areas/<str:area_name>/<str:layer_name>/', views.LayerContentListView.as_view()),
 ] 
 
 if settings.DEBUG:

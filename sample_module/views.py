@@ -10,7 +10,7 @@ class ExampleView(CommandView):
 
     def handler(self, validated_data):
         return CommandResponse([], {}, {
-            'msg': f"{validated_data['string_param']} has some {validated_data['int_param']}"
+            'msg': f"{validated_data['string_param']} has some {validated_data['int_param']} in it. Awesome"
         })
 
 

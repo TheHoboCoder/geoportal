@@ -3,7 +3,6 @@ from common.models import AreaPO, LayerPO
 from common.commands import CommandList
 from common.schema import Schema
 from django.contrib.gis.geos import Point
-from .models import SomeGISModel
 
 COMMANDS = CommandList(
     (ExampleView(),
@@ -21,8 +20,7 @@ SCHEMA = Schema(
 
     layers=(LayerPO(name="ground_layer",
                     ordering=0,
-                    alias="Векторный слой",
-                    model_cls=SomeGISModel), 
+                    alias="Векторный слой"), 
             # other layer
             )
 )

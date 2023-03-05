@@ -1,4 +1,4 @@
-from django.db import models
+from datetime import datetime
 
 class AreaPO:
     def __init__(self, name: str, bbox: tuple, alias:str = ""):
@@ -10,25 +10,28 @@ class LayerPO:
     def __init__(self, name: str, 
                        ordering: int, 
                        alias:str = "", 
-                       area:str|None=None, 
-                       model_cls:type=None):
+                       area:str|None=None,
+                       serializer_cls=None,
+                       is_vector=True):
         self.name = name
         self.area = area
         self.alias = alias
         self.ordering = ordering
-        self.model_cls = model_cls
+        self.serializer_cls = serializer_cls
+        self.is_vector = is_vector
 
-class GISModel(models.Model):
+class FeaturePO:
+    def __init__(self, name: str = "", date: datetime = None):
+        self.name = name
+        self.datetime = date
 
-    @property
-    def alias(self):
-        return self.__str__()
+class VectorFeaturePO(FeaturePO):
+    def __init__(self, properties: dict, geometry: tuple, date: datetime = None):
+        super().__init__(date)
+        self.properties = properties
+        self.geometry = geometry
 
-    class Meta:
-        abstract = True
-
-class TimedGISModel(GISModel):
-    data = models.DateTimeField()
-
-    class Meta:
-        abstract = True
+class RasterFeaturePO(FeaturePO):
+    def __init__(self, file, date: datetime = None):
+        super().__init__(date)
+        self.file = file

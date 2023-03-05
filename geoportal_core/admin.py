@@ -1,6 +1,9 @@
 from django.contrib import admin
-from .models import GISModule
+from . import models
 
-admin.site.register(GISModule)
+admin.site.register(models.GISModule)
+admin.site.register(models.Layer)
+admin.site.register(models.Area)
+admin.site.register(models.VectorFeature)
 
 
