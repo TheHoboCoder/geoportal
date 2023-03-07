@@ -12,7 +12,7 @@ class ModuleListSerializer(serializers.ModelSerializer):
 class AreaListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Area
-        fields = ['name', 'alias', 'point_min', 'point_max']
+        fields = ['name', 'alias', 'bbox']
 
 class LayerSerializer(serializers.ModelSerializer):
     class Meta:

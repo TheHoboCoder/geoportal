@@ -10,6 +10,8 @@ from rest_framework import status
 from rest_framework_gis.pagination import GeoJsonPagination
 import importlib
 
+def showindex(request):
+    return render(request, 'geoportal_core/index.html')
 
 class ModuleListView(ListAPIView):
     serializer_class = serializers.ModuleListSerializer

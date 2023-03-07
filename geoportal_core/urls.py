@@ -4,6 +4,7 @@ from django.conf.urls.static import static
 from . import views
 
 urlpatterns = [
+    path('', views.showindex),
     path('modules/', views.ModuleListView.as_view()),
     path('modules/<str:module_name>/commands/', views.get_commands),
     path('modules/<str:module_name>/commands/<str:command_name>/', views.run_command),
