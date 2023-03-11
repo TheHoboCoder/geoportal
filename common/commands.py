@@ -23,6 +23,10 @@ class CommandView:
     alias = ""
     name = ""
 
+    #TODO:
+    def __init__(self):
+        self.serializer_instance = self.serializer_class()
+    
     def handler(self, validated_data) -> CommandResponse:
         pass
 

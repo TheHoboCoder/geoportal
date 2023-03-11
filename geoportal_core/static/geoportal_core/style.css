@@ -4,11 +4,24 @@ body{
 }
 
 .floating{
-    position: absolute;
-    z-index: 100;
+    position: relative;
+    z-index: 300;
 }
 
-#modules{
+section{
+    width: 80%;
+    margin-left: 100px;
+    margin-top: 20px;
+}
+
+aside{
+    width: 10%;
+    margin-right: 5px;
+    margin-left: auto;
+    margin-top: 200px;
+}
+
+/* #modules{
     top: 20px;
     left: 100px;
 }
@@ -16,10 +29,12 @@ body{
 #areas{
     top: 20px;
     left: 150px;
-}
+} */
 
 #map{
-    
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100vh;
 }

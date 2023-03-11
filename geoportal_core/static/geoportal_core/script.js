@@ -41,25 +41,30 @@ var map = new ol.Map({
     view: mapView
   });
 
-map.addControl(new ol.control.LayerSwitcher({
+var layerSwitcher = new ol.control.LayerSwitcher({
     startActive: true,
     activationMode: 'click'
-}));
-
-$.getJSON("modules/", function (data){
-    uploadAreas(data[0].name)
-    for(var module of data){
-        $("#modules").append(`<option value='${module.name}'>${module.alias}</option>`)
-    }
 });
 
-function uploadAreas(name){
-    $.getJSON(`modules/${name}/areas/`, function (data){
-        zoomToArea(data[0])
-        uploadVectorLayers(name, data[0].name)
-        for(var area of data){
-            $("#areas").append(`<option value='${area.name}'>${area.alias}</option>`)
-        }  
+map.addControl(layerSwitcher);
+
+var HOST = "http://"+window.location.host
+var MODULE = window.location.pathname.split('/')[2]
+
+uploadArea(MODULE, $("#areas").val())
+
+$("#areas").change(function(){
+   uploadArea(MODULE, $(this).val())
+})
+
+function uploadArea(module_name, name){
+    $.ajax(`${HOST}/modules/${module_name}/areas/${name}/`)
+    .done(function(data){
+        zoomToArea(data);
+        uploadVectorLayers(module_name, name)
+    })
+    .fail(function (t) {
+        console.log(`error loading area ${name}`)
     });
 }
 
@@ -74,26 +79,50 @@ function zoomToArea(area){
 }
 
 function uploadVectorLayers(module_name, area_name){
-    $.getJSON(`modules/${module_name}/areas/${area_name}/`, function (data){
+    $.getJSON(`${HOST}/modules/${module_name}/areas/${area_name}/layers/`, function (data){
         for(var layer of data){
             if (layer.layer_type == 'V'){
-                $.getJSON(`modules/${module_name}/areas/${area_name}/${layer.name}/`, function (json){
-                    // mapView.fit(json.features[0].bbox, {duration: 800})
-                    var mapLayer = new ol.layer.Vector({
-                        title: layer.alias,
-                        source: new ol.source.Vector({
-                            features: new ol.format.GeoJSON().readFeatures(json)
-                        })
-                    });
-                    if (vectorGroup.layers == undefined){
-                        vectorGroup.setLayers(new ol.Collection([mapLayer]))
-                    }
-                    else{
-                        vectorGroup.layers.append(mapLayer)
-                    }
-                    
-                })
+                var mapLayer = new ol.layer.Vector({
+                    title: layer.alias,
+                    source: new ol.source.Vector({
+                        format: new ol.format.GeoJSON(),
+                        url: `${HOST}/modules/${module_name}/areas/${area_name}/layers/${layer.name}/`
+                    })
+                });
+
+                if (vectorGroup.layers == undefined){
+                    vectorGroup.setLayers(new ol.Collection([mapLayer]))
+                }
+                else{
+                    vectorGroup.layers.append(mapLayer)
+                }
             } 
         } 
+        layerSwitcher.renderPanel();
     });
 }
+
+$(".command_form").each(function(form){
+    $(this).submit(function(event){
+        event.preventDefault();
+        var command_name = $(this).attr("name")
+        $.ajax({
+            url: `${HOST}/modules/${MODULE}/commands/${command_name}/`,
+            data: $(this).serialize()
+        })
+        .done(function (data){
+            console.log(data);
+        })
+        .fail(function (data){
+            console.log(data);
+        })
+    })
+})
+
+$("#commands").change(function(){
+    var val = $(this).val();
+    $(".command_form").hide();
+    if(val != -1){
+        $(`.command_form[name='${val}']`).show();
+    }
+})

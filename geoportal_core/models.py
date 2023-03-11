@@ -17,7 +17,10 @@ class GISModule(models.Model):
     owner = models.ForeignKey(User, on_delete=models.RESTRICT, verbose_name="Разработчик")
 
     def __str__(self) -> str:
-        return self.name
+        return f"Модуль {self.name}"
+    
+    def owner_name(self):
+        return self.owner.get_full_name()
 
     @transaction.atomic
     def save(self, *args, **kwargs):
@@ -32,7 +35,7 @@ class GISModule(models.Model):
                 layer.save()
 
     class Meta:
-        verbose_name = "модуль"
+        verbose_name = "Модуль"
 
 def get_areas(args):
     return Q(module__name=args["module_name"])
@@ -45,12 +48,15 @@ class Area(models.Model):
     """ Именнованая прямоугольная область на карте, к которой могут быть привязаны
         различные гео объекты.
     """
-    name = models.SlugField(max_length=15)
-    alias = models.CharField(max_length=50)
-    module = models.ForeignKey(GISModule, on_delete=models.CASCADE)
+    name = models.SlugField(verbose_name="Название", max_length=15)
+    alias = models.CharField(verbose_name="Псевдоним", max_length=50)
+    module = models.ForeignKey(GISModule, on_delete=models.CASCADE, verbose_name="Модуль")
     # Point(xmin, ymin), Point(xmax, ymax)
-    bbox = gis_models.PolygonField(default=Polygon.from_bbox((33, 65, 35, 66)))
+    bbox = gis_models.PolygonField(default=Polygon.from_bbox((33, 65, 35, 66)), verbose_name="Ограничивающий прямоугольник")
     objects = AreaManager()
+
+    def __str__(self) -> str:
+        return f"Область {self.name}, {self.module.name}"
 
     @classmethod
     def from_po(cls, po: c_models.AreaPO, module):
@@ -61,6 +67,7 @@ class Area(models.Model):
 
     class Meta:
         unique_together = ['name', 'module']
+        verbose_name = "Область"
 
 def get_layers(args):
     return get_areas(args) & (Q(area__name__isnull=True) | 
@@ -77,13 +84,13 @@ class LayerManager(models.Manager):
         return self.get(get_layer_content(args))
 
 class Layer(models.Model):
-    name = models.SlugField(max_length=15)
+    name = models.SlugField(max_length=15, verbose_name="Название")
     # если area = Null, то слой виден во всех областях, иначе только в конкретной области
-    area = models.ForeignKey(Area, on_delete=models.CASCADE, blank=True, null=True)
-    module = models.ForeignKey(GISModule, on_delete=models.CASCADE)
-    alias = models.CharField(max_length=50, blank=True)
-    ordering = models.IntegerField(default=0)
-    layer_type = models.CharField(max_length=1, choices=(('V', 'Vector'), ('R', 'Raster')), default='V')
+    area = models.ForeignKey(Area, on_delete=models.CASCADE, blank=True, null=True, verbose_name="Область")
+    module = models.ForeignKey(GISModule, on_delete=models.CASCADE, verbose_name="Модуль")
+    alias = models.CharField(max_length=50, blank=True, verbose_name="Псевдоним")
+    ordering = models.IntegerField(default=0, verbose_name="Положение")
+    layer_type = models.CharField(max_length=1, choices=(('V', 'Vector'), ('R', 'Raster')), default='V', verbose_name="Тип")
     objects = LayerManager()
 
     def is_vector(self):
@@ -97,10 +104,15 @@ class Layer(models.Model):
                     ordering=po.ordering,
                     module=module,
                     layer_type='V' if po.is_vector else 'R')
+    
+    def __str__(self) -> str:
+        type_l = "Векторный" if self.layer_type == 'V' else "Растровый"
+        return f"{type_l} cлой {self.name}, {self.module.name}"
 
     class Meta:
         unique_together = ['name', 'module']
         ordering = ['ordering']
+        verbose_name = "Слой"
 
 class FeatureManager(models.Manager):
     def filter_features(self, layer_name, area_name):
@@ -114,18 +126,21 @@ class FeatureManager(models.Manager):
                             Q(datetime__lte=datetime_end)))
     
 class Feature(models.Model):
-    name = models.CharField(max_length=50, blank=True)
-    layer = models.ForeignKey(Layer, on_delete=models.CASCADE)
-    area = models.ForeignKey(Area, on_delete=models.CASCADE)
-    datetime = models.DateTimeField(blank=True, null=True)
+    name = models.CharField(max_length=50, blank=True, verbose_name="Название")
+    layer = models.ForeignKey(Layer, on_delete=models.CASCADE, verbose_name="Слой")
+    area = models.ForeignKey(Area, on_delete=models.CASCADE, verbose_name="Область")
+    datetime = models.DateTimeField(blank=True, null=True, verbose_name="Метка времени")
     objects = FeatureManager()
+
+    def __str__(self) -> str:
+        return f"Объект {self.name} слоя {self.layer.name}"
 
     class Meta:
         abstract = True
 
 class VectorFeature(Feature):
-    properties = models.JSONField()
-    geometry = gis_models.GeometryCollectionField()
+    properties = models.JSONField(verbose_name="Атрибуты")
+    geometry = gis_models.GeometryCollectionField(verbose_name="Геометрия")
 
     @classmethod
     def from_po(cls, po: c_models.VectorFeaturePO, layer, area):
@@ -135,6 +150,9 @@ class VectorFeature(Feature):
                    datetime=po.datetime,
                    properties=po.properties,
                    geometry=GeometryCollection(po.geometry))
+    
+    class Meta:
+        verbose_name = "Векторные объекты"
 
 class RasterFeature(Feature):
     raster_filepath = models.FilePathField()

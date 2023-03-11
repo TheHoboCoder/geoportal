@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView, GenericAPIView
 from . import models, serializers
 from .forms import CreateGISModuleForm
 from django.http import HttpResponseRedirect, HttpResponse
@@ -10,8 +10,16 @@ from rest_framework import status
 from rest_framework_gis.pagination import GeoJsonPagination
 import importlib
 
-def showindex(request):
-    return render(request, 'geoportal_core/index.html')
+def show_map(request, module_name):
+    return render(request, 'geoportal_core/map.html', { 
+        'module': models.GISModule.objects.get(name=module_name),
+        'area_list': models.Area.objects.path_filter({'module_name': module_name}),
+        'commands': get_module_config(module_name).COMMANDS.commands.values(),
+    })
+
+def module_list(request):
+    return render(request, 'geoportal_core/module_list.html', 
+                  {'module_list': models.GISModule.objects.all()})
 
 class ModuleListView(ListAPIView):
     serializer_class = serializers.ModuleListSerializer
@@ -22,6 +30,14 @@ class AreaListView(ListAPIView):
 
     def get_queryset(self):
         return models.Area.objects.path_filter(self.kwargs)
+    
+class AreaDetailView(RetrieveAPIView):
+    serializer_class = serializers.AreaListSerializer
+    lookup_field = "name"
+    lookup_url_kwarg = "area_name"
+
+    def get_queryset(self):
+        return models.Area.objects.filter(module__name=self.kwargs["module_name"])
 
 class LayerListView(ListAPIView):
     serializer_class = serializers.LayerSerializer

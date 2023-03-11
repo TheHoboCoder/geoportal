@@ -1,8 +1,10 @@
 from rest_framework import serializers
+from rest_framework_gis.fields import GeometryField
 
 class SomeCommandSerializer(serializers.Serializer):
     int_param = serializers.IntegerField()
     string_param = serializers.CharField(max_length=50)
+    point = GeometryField()
 
     def validate_int_param(self, val):
         if val not in range(0, 5):
