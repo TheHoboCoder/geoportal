@@ -1,4 +1,6 @@
 from rest_framework.response import Response
+from geoportal_core.models import VectorFeature
+from geoportal_core.serializers import VectorFeatureSerializer
 
 class CommandResponse:
     """updated_layers - список названий слоев, которые были изменены в результате выполнения команды
@@ -36,8 +38,10 @@ class CommandView:
     def run(self, request):
         serializer = self.serializer_class(data=request.GET)
         if serializer.is_valid(raise_exception=True):
-            response = self.handler(serializer.validated_data)
-            return Response(data=response.serialize())
+            response = self.handler(serializer.validated_data).serialize()
+            gis_data = map(lambda t: VectorFeature.from_po(po=t, layer=None, area=None), response['gis_data'])
+            response['gis_data'] = VectorFeatureSerializer(gis_data, many=True).data
+            return Response(data=response)
 
 
 class CommandList:

@@ -1,10 +1,11 @@
 from rest_framework import serializers
-from rest_framework_gis.fields import GeometryField
+from common import serializers as geo_serializers
 
-class SomeCommandSerializer(serializers.Serializer):
+class DrawLineSerializer(serializers.Serializer):
     int_param = serializers.IntegerField()
     string_param = serializers.CharField(max_length=50)
-    point = GeometryField()
+    point_start = geo_serializers.PointField()
+    point_end = geo_serializers.PointField()
 
     def validate_int_param(self, val):
         if val not in range(0, 5):
@@ -15,6 +16,7 @@ class SomeCommandSerializer(serializers.Serializer):
         if "test" not in val:
             raise serializers.ValidationError("string_param should contain 'test' word")
         return val
+
 
 
 

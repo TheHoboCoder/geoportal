@@ -81,6 +81,7 @@ function zoomToArea(area){
 }
 
 function uploadVectorLayers(module_name, area_name){
+    vectorGroup.getLayers().clear()
     $.getJSON(`${HOST}/modules/${module_name}/areas/${area_name}/layers/`, function (data){
         for(var layer of data){
             if (layer.layer_type == 'V'){
@@ -91,13 +92,7 @@ function uploadVectorLayers(module_name, area_name){
                         url: `${HOST}/modules/${module_name}/areas/${area_name}/layers/${layer.name}/`
                     })
                 });
-
-                if (vectorGroup.layers == undefined){
-                    vectorGroup.setLayers(new ol.Collection([mapLayer]))
-                }
-                else{
-                    vectorGroup.layers.append(mapLayer)
-                }
+                vectorGroup.getLayers().insertAt(0, mapLayer);
             } 
         } 
         layerSwitcher.renderPanel();
@@ -112,9 +107,16 @@ $(".command_form").submit(function(event){
         data: $(this).serialize()
     })
     .done(function (data){
-        console.log(data);
+        map.addLayer(new ol.layer.Vector({
+            title: `Команда ${command_name}`,
+            source: new ol.source.Vector({
+                features: new ol.format.GeoJSON().readFeatures(data.gis_data)
+            })
+        }));
+        layerSwitcher.renderPanel();
     })
     .fail(function (data){
+        console.log("failed");
         console.log(data);
     })
 });

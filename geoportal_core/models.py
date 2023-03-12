@@ -21,19 +21,23 @@ class GISModule(models.Model):
     
     def owner_name(self):
         return self.owner.get_full_name()
-
+    
     @transaction.atomic
-    def save(self, *args, **kwargs):
-        super(GISModule, self).save()
-        if self.pk is None:
-            importlib.invalidate_caches()
-            config = importlib.import_module(f"{self.name}.module_config", package=None)
-            schema = config.SCHEMA
-            for area in map(lambda t: Area.from_po(po=t, module=self), schema.areas):
-                area.save()
-            for layer in map(lambda t: Layer.from_po(po=t, module=self), schema.layers):
-                layer.save()
+    def import_data(self):
+        importlib.invalidate_caches()
+        config = importlib.import_module(f"{self.name}.module_config", package=None)
+        schema = config.SCHEMA
+        for area in map(lambda t: Area.from_po(po=t, module=self), schema.areas):
+            area.save()
+        for layer in map(lambda t: Layer.from_po(po=t, module=self), schema.layers):
+            layer.save()
 
+    def save(self, *args, **kwargs):
+        is_created = self.pk is None
+        super(GISModule, self).save()
+        if is_created:
+            self.import_data()
+            
     class Meta:
         verbose_name = "Модуль"
 
@@ -99,7 +103,7 @@ class Layer(models.Model):
     @classmethod
     def from_po(cls, po: c_models.LayerPO, module):
         return cls(name=po.name,
-                    area=None if not po.area else Area.objects.get(name=po.area),
+                    area=None if not po.area else Area.objects.get(name=po.area, module=module),
                     alias=po.alias,
                     ordering=po.ordering,
                     module=module,
