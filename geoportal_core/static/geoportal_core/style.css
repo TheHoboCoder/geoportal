@@ -15,10 +15,26 @@ section{
 }
 
 aside{
-    width: 10%;
-    margin-right: 5px;
+    width: 300px;
+    margin-right: 10px;
     margin-left: auto;
-    margin-top: 200px;
+    margin-top: 250px;
+}
+
+.command_form_wrapper{
+    background-color: white;
+    border-radius: 5px;
+    padding: 8px;
+}
+
+.status{
+    color: red;
+    font-style: italic;
+}
+
+.status-selected{
+    color: green;
+    font-style: normal;
 }
 
 /* #modules{

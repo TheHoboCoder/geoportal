@@ -17,6 +17,8 @@ var areaLayer = new ol.layer.Vector({
     source: new ol.source.Vector()
 })
 
+var drawingInteraction = null
+
 var mapView = new ol.View({
     center: [34, 68],
     zoom: 7,
@@ -36,7 +38,7 @@ var map = new ol.Map({
             ]
         }), 
         vectorGroup,
-        areaLayer
+        areaLayer,
     ],
     view: mapView
   });
@@ -102,27 +104,74 @@ function uploadVectorLayers(module_name, area_name){
     });
 }
 
-$(".command_form").each(function(form){
-    $(this).submit(function(event){
-        event.preventDefault();
-        var command_name = $(this).attr("name")
-        $.ajax({
-            url: `${HOST}/modules/${MODULE}/commands/${command_name}/`,
-            data: $(this).serialize()
-        })
-        .done(function (data){
-            console.log(data);
-        })
-        .fail(function (data){
-            console.log(data);
-        })
+$(".command_form").submit(function(event){
+    event.preventDefault();
+    var command_name = $(this).attr("name")
+    $.ajax({
+        url: `${HOST}/modules/${MODULE}/commands/${command_name}/`,
+        data: $(this).serialize()
     })
-})
+    .done(function (data){
+        console.log(data);
+    })
+    .fail(function (data){
+        console.log(data);
+    })
+});
+
+function clearGeoField(layer, text_area, status_span){
+    status_span.text("Не выбрано");
+    if(status_span.hasClass("status-selected")){
+        status_span.removeClass("status-selected");
+    }
+    text_area.text("");
+    layer.getSource().clear();
+}
+
+//var drawingLayers = []
+
+$(".command_form").children(".geofield").each(function(){
+    // TODO: add layers only when form is show, then remove
+    var drawingSource = new ol.source.Vector();
+    var drawingLayer = new ol.layer.Vector({
+        source: drawingSource
+    });
+    map.addLayer(drawingLayer);
+    var text_area = $(this).children("textarea").first()
+    var geocontrol = $(this).children(".geo-edit").first()
+    var geom_type = geocontrol.attr('geom_type')
+    var status = geocontrol.children("span").first();
+    geocontrol.children(".add").click(function(){
+        clearGeoField(drawingLayer, text_area, status);
+        if (drawingInteraction != null){
+            return;
+        }
+        drawingInteraction = new ol.interaction.Draw({
+            source: drawingSource,
+            type: geom_type,
+            maxPoints: 6
+        });
+        drawingInteraction.on('drawend', function(event){
+            text_area.text(new ol.format.WKT().writeFeature(event.feature))
+            status.text("Выбрано")
+            status.toggleClass("status-selected");
+            map.removeInteraction(drawingInteraction);
+            drawingInteraction = null
+        })
+        map.addInteraction(drawingInteraction);
+    })
+    geocontrol.children(".clear").click(function(){
+        clearGeoField(drawingLayer, text_area, status);
+    })
+});
+
+
+$("#commands").val(-1);
 
 $("#commands").change(function(){
     var val = $(this).val();
-    $(".command_form").hide();
+    $(".command_form_wrapper").hide();
     if(val != -1){
-        $(`.command_form[name='${val}']`).show();
+        $(`.command_form_wrapper[name='${val}']`).show();
     }
 })
