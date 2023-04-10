@@ -32,7 +32,7 @@ ALLOWED_HOSTS = []
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-MODULE_PATH = os.path.join(MEDIA_ROOT, 'modules')
+MODULE_PATH = os.path.join(BASE_DIR, 'modules')
 if MODULE_PATH not in sys.path:
     sys.path.insert(0, MODULE_PATH)
 

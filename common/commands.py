@@ -3,8 +3,8 @@ from geoportal_core.models import VectorFeature
 from geoportal_core.serializers import VectorFeatureSerializer
 
 class CommandResponse:
-    """updated_layers - список названий слоев, которые были изменены в результате выполнения команды
-       gis_data - новые слои и геоданные, формат в разработке 
+    """updated_layers - в разработке, пока нужно передавать просто пустой список
+       gis_data - список объектов VectorFeaturePO (см. models.py)
        custom_data - словарь с данными (только примитивные типы Python)
     """
     def __init__(self, updated_layers, gis_data, custom_data: dict):

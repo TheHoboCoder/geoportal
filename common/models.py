@@ -25,8 +25,16 @@ class FeaturePO:
         self.name = name
         self.datetime = date
 
+# векторные данные
 class VectorFeaturePO(FeaturePO):
     def __init__(self, properties: dict, geometry: tuple, date: datetime = None):
+        """
+
+        Args:
+            properties (dict): словарь примитивных типов python. Лучше не использовать вложенные словари
+            geometry (tuple): список объектов векторной геометрии geos: https://docs.djangoproject.com/en/4.1/ref/contrib/gis/geos/#geometry-objects
+            date (datetime, optional): дата. Defaults to None.
+        """
         super().__init__(date)
         self.properties = properties
         self.geometry = geometry

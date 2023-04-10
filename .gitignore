@@ -3,7 +3,7 @@
 *.pot
 *.pyc
 __pycache__
-media/modules/
+modules/*
 zipped
 migrations
 # data
