@@ -42,11 +42,7 @@ def remove_module_dir(module_name):
 
 def unzip_file(file, fullpath):
 
-    try: 
-        os.mkdir(fullpath)
-    except:
-        pass
-
+    os.mkdir(fullpath)
     dirname = os.path.dirname(fullpath)
 
     zfobj = zipfile.ZipFile(file)

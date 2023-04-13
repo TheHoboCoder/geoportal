@@ -14,10 +14,6 @@ from pathlib import Path
 import os
 import sys
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
@@ -27,12 +23,17 @@ SECRET_KEY = 'django-insecure-!&_4&uc%dl^r(n$oy2wb23w3tk7d1%w1-(g%(xtz4wyniruu&!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent 
+
 ALLOWED_HOSTS = []
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 MODULE_PATH = os.path.join(BASE_DIR, 'modules')
+if not os.path.exists(MODULE_PATH):
+    MODULE_PATH = os.path.join(BASE_DIR.parent, 'modules')
 if MODULE_PATH not in sys.path:
     sys.path.insert(0, MODULE_PATH)
 
@@ -52,7 +53,6 @@ INSTALLED_APPS = [
 ]
 
 MODULES = []
-# TODO: 
 with os.scandir(MODULE_PATH) as it:
     for entry in it:
         if entry.is_dir() and \
