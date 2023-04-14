@@ -10,7 +10,7 @@ class LayerPO:
     def __init__(self, name: str, 
                        ordering: int, 
                        alias:str = "", 
-                       area:str|None=None,
+                       area=None,
                        serializer_cls=None,
                        is_vector=True):
         self.name = name
