@@ -2,7 +2,7 @@
 # 1. clone repository
  git clone https://github.com/TheHoboCoder/deploy-geodjango.git ../deploy-geodjango
 # 2. remove all in modules just in case
-rm -R modules/*
+mkdir modules || rm -R modules/*
 cd ../deploy-geodjango/
 chmod u+x deploy.sh common_funcs.sh
 pwd
