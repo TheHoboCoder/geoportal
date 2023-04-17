@@ -13,7 +13,8 @@ class GISModule(models.Model):
     """ Модуль для установки
     """
     name = models.SlugField(max_length=15, unique=True, verbose_name="Название")
-    alias = models.CharField(max_length=50, verbose_name="Псевдоним", blank=True)
+    alias = models.CharField(max_length=50, verbose_name="Псевдоним")
+    summary = models.CharField(max_length=100, verbose_name="Краткое описание")
     description = models.TextField(verbose_name="Описание", blank=True)
     owner = models.ForeignKey(User, on_delete=models.RESTRICT, verbose_name="Разработчик")
 
@@ -96,7 +97,7 @@ class Layer(models.Model):
     # если area = Null, то слой виден во всех областях, иначе только в конкретной области
     area = models.ForeignKey(Area, on_delete=models.CASCADE, blank=True, null=True, verbose_name="Область")
     module = models.ForeignKey(GISModule, on_delete=models.CASCADE, verbose_name="Модуль")
-    alias = models.CharField(max_length=50, blank=True, verbose_name="Псевдоним")
+    alias = models.CharField(max_length=50, verbose_name="Псевдоним")
     ordering = models.IntegerField(default=0, verbose_name="Положение")
     layer_type = models.CharField(max_length=1, choices=(('V', 'Vector'), ('R', 'Raster')), default='V', verbose_name="Тип")
     objects = LayerManager()
