@@ -1,11 +1,8 @@
 from django import forms
-from .models import GISModule
-import zipfile, os, shutil
-from django.conf import settings
-from django.apps import apps
-from django.core import management
-from collections import OrderedDict
-from django.db import transaction
+from .models import GISModule, Layer, VectorFeature, RasterFeature
+from django.core.exceptions import ValidationError
+from . import module_filesystem as utils
+from zipfile import BadZipfile, LargeZipFile
 
 class EditGISModuleForm(forms.ModelForm):
     class Meta:
@@ -15,60 +12,77 @@ class EditGISModuleForm(forms.ModelForm):
 class CreateGISModuleForm(forms.ModelForm):
     module_file = forms.FileField()
 
+    def clean_module_file(self):
+        if not self.cleaned_data['module_file'].name.endswith('.zip'):
+            raise ValidationError('Only .zip files allowed')
+        return self.cleaned_data['module_file']
+    
+    def clean(self):
+        cleaned_data = super().clean()
+
+        try:
+            utils.unzip_file(cleaned_data["module_file"], cleaned_data["name"])
+        except BadZipfile as zip_error:
+            utils.remove_module_dir(cleaned_data["name"])
+            raise ValidationError(f"Unable to unpack zip. Check archive is correct.")
+        except OSError as os_error:
+            utils.remove_module_dir(cleaned_data["name"])
+            raise ValidationError(f"Error when creating folders")
+        except Exception as err:
+            utils.remove_module_dir(cleaned_data["name"])
+            raise ValidationError(f"Unknown error: {err}")
+        
+        try:
+            utils.try_import(cleaned_data["name"])
+        except ModuleNotFoundError:
+            utils.remove_module_dir(cleaned_data["name"])
+            raise ValidationError('No module_config file')
+        except AttributeError:
+            utils.remove_module_dir(cleaned_data["name"])
+            raise ValidationError('Config must contain COMMANDS and SCHEMA')
+
     class Meta:
         model = GISModule
         exclude = ['owner']
 
     def save(self, commit: bool = True):
-        module_file = self.cleaned_data['module_file']
         del self.cleaned_data['module_file']
         model = super().save(commit=False)
-        fullpath = get_module_path(self.cleaned_data['name'])
-        try:
-            unzip_file(module_file, fullpath)
-        except Exception:
-            if os.path.exists(fullpath):
-                shutil.rmtree(fullpath)
-            raise Exception
-        
         return model
-
-def get_module_path(module_name):
-    return os.path.join(settings.MODULE_PATH, module_name)
-
-def remove_module_dir(module_name):
-    if os.path.exists(get_module_path(module_name)):
-        shutil.rmtree(get_module_path(module_name))
-
-def unzip_file(file, fullpath):
-
-    os.mkdir(fullpath)
-    dirname = os.path.dirname(fullpath)
-
-    zfobj = zipfile.ZipFile(file)
-    for name in zfobj.namelist():
-        if name.endswith('/'):
-            try: # Don't try to create a directory if exists
-                os.mkdir(os.path.join(dirname, name))
-            except:
-                pass
-        else:
-            outfile = open(os.path.join(dirname, name), 'wb')
-            outfile.write(zfobj.read(name))
-            outfile.close()
     
-    # install_module(module_name)
+class LayerAdminForm(forms.ModelForm):
 
-def install_module(module_name):
-    # TODO: dirty as hell
-    settings.INSTALLED_APPS += (module_name, )
-    apps.app_configs = OrderedDict()
-    apps.apps_ready = apps.models_ready = apps.loading = apps.ready = False
-    apps.clear_cache()
-    apps.populate(settings.INSTALLED_APPS)
-    management.call_command('makemigrations', module_name, interactive=False)
-    #TODO: not applying
-    management.call_command('migrate', module_name, interactive=False)
+    def clean_layer_type(self):
+        # попытка изменить тип слоя с привязанными к нему объектами
+        if self.instance is not None and self.instance.pk is not None:
+            cls = RasterFeature if self.cleaned_data["layer_type"] == 'V' else VectorFeature
+            if cls.objects.filter(layer=self.instance.pk).count() > 0:
+                raise ValidationError("Вы пытаетесь изменить тип слоя, но он содержит объекты."+
+                                      "Удалите их или переместите на другой слой.")
+        return self.cleaned_data["layer_type"]
+    
+    def clean(self):
+        super().clean()
+        if self.cleaned_data["area"] is not None and \
+           self.cleaned_data["module"] != self.cleaned_data["area"].module:
+            raise ValidationError("Область должна принадлежать указанному модулю")
+
+    class Meta:
+        model = Layer
+        fields = '__all__'
+
+class VectorFeatureAdminForm(forms.ModelForm):
+     
+    def clean(self):
+        super().clean()
+        if self.cleaned_data["area"].module != self.cleaned_data["layer"].module:
+            raise ValidationError("Область и слой должны находится в одном модуле")
+        
+    class Meta:
+        model = VectorFeature
+        fields = '__all__'
+
+
     
     
 

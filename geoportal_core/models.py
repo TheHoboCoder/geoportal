@@ -7,6 +7,7 @@ from django.db import transaction
 import importlib
 from django.db.models import Q
 from common import models as c_models
+from .module_filesystem import remove_module_dir
     
 class GISModule(models.Model):
     """ Модуль для установки
@@ -37,6 +38,9 @@ class GISModule(models.Model):
         super(GISModule, self).save()
         if is_created:
             self.import_data()
+
+    def remove_dir(self):
+        remove_module_dir(self.name)
             
     class Meta:
         verbose_name = "Модуль"
