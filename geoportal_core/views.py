@@ -11,14 +11,14 @@ from rest_framework_gis.pagination import GeoJsonPagination
 import importlib
 
 def show_map(request, module_name):
-    return render(request, 'geoportal_core/map.html', { 
+    return render(request, 'map.html', { 
         'module': models.GISModule.objects.get(name=module_name),
         'area_list': models.Area.objects.path_filter({'module_name': module_name}),
         'commands': get_module_config(module_name).COMMANDS.commands.values(),
     })
 
 def module_list(request):
-    return render(request, 'geoportal_core/module_list.html', 
+    return render(request, 'module_list.html', 
                   {'module_list': models.GISModule.objects.all()})
 
 class ModuleListView(ListAPIView):
