@@ -36,7 +36,7 @@ sudo apt-get update && sudo apt-get install git
 git clone https://github.com/TheHoboCoder/geoportal.git
 cd geoportal
 chmod u+x deploy.sh
-sudo ./deploy.sh
+sudo ./deploy.sh <домен>
 ```
 
 Установка на Debian:
@@ -46,8 +46,8 @@ su -
 apt-get update && apt-get install git
 git clone https://github.com/TheHoboCoder/geoportal.git
 cd geoportal
-chmod u+x deploy.sh
-./deploy.sh
+chmod u+x deploy.sh 
+./deploy.sh <домен>
 ```
 
 Для сайта будет создан аккаунт администратора admin с паролем *changepassword*:
