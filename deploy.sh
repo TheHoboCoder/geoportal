@@ -1,6 +1,6 @@
 #!/bin/bash
-DOMAINNAME=$2
-SUBDOMEN=$3
+DOMAINNAME=$1
+SUBDOMEN=$2
 # 1. clone repository
  git clone https://github.com/TheHoboCoder/deploy-geodjango.git ../deploy-geodjango
 # 2. remove all in modules just in case
