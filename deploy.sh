@@ -1,4 +1,6 @@
 #!/bin/bash
+DOMAINNAME=$2
+SUBDOMEN=$3
 # 1. clone repository
  git clone https://github.com/TheHoboCoder/deploy-geodjango.git ../deploy-geodjango
 # 2. remove all in modules just in case
@@ -7,7 +9,7 @@ cd ../deploy-geodjango/
 chmod u+x deploy.sh common_funcs.sh
 pwd
 # 3. run script
-./deploy.sh geoportal geoportal.com
+./deploy.sh geoportal $DOMAINNAME $SUBDOMEN
 # 4. change ownership of media
 chown geoportal:www-data /webapps/geoportal_project/geoportal/modules
 chmod g+w /webapps/geoportal_project/geoportal/modules
