@@ -50,8 +50,10 @@ var layerSwitcher = new ol.control.LayerSwitcher({
 
 map.addControl(layerSwitcher);
 
-var HOST = "http://"+window.location.host
-var MODULE = window.location.pathname.split('/')[2]
+//TODO: bad
+var HOST = window.location.protocol+"//"+window.location.host
+var splitted = window.location.pathname.split('/')
+var MODULE = splitted[splitted.length - 2]
 
 uploadArea(MODULE, $("#areas").val())
 
