@@ -1,6 +1,10 @@
+import vue from '@vitejs/plugin-vue'
 const { resolve } = require('path');
  
 module.exports = {
+  plugins: [    
+    vue(),
+  ],
   root: resolve('./static/src'),
   base: '/static/',
   server: {
