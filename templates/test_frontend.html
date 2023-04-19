@@ -1,0 +1,13 @@
+{% load static %}
+{% load django_vite %}
+<!doctype html>
+<html>
+  <head>
+    <title>Getting Started with Django and Vite</title>
+    {% vite_hmr_client %}
+    {% vite_asset 'js/main.js' %}
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+</html>

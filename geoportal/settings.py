@@ -28,6 +28,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 ALLOWED_HOSTS = []
 
+
+
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -46,11 +48,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_vite',
     'geoportal_core',
     'django.contrib.gis',
+    'corsheaders',
     'rest_framework',
     'rest_framework_gis',
 ]
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
 
 MODULES = []
 with os.scandir(MODULE_PATH) as it:
@@ -62,6 +69,7 @@ with os.scandir(MODULE_PATH) as it:
             MODULES.append(entry.name)
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -106,14 +114,15 @@ DATABASES = {
     }
 }
 
+DJANGO_VITE_ASSETS_PATH = os.path.join(BASE_DIR, "static", "dist")
+DJANGO_VITE_DEV_MODE = True
+
 GEOSERVER = {
     'HOST': '127.0.0.1',
     'PORT': '8080',
     'USER': 'admin',
     'PASSWORD': 'geoserver'
 }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -150,10 +159,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = '/static/'
+# for test vite prod
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-STATICFILES_DIRS = (
+STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
-)
+    DJANGO_VITE_ASSETS_PATH
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field

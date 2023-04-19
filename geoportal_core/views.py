@@ -10,6 +10,9 @@ from rest_framework import status
 from rest_framework_gis.pagination import GeoJsonPagination
 import importlib
 
+def test_fronend(request):
+     return render(request, 'test_frontend.html')
+
 def show_map(request, module_name):
     return render(request, 'map.html', { 
         'module': models.GISModule.objects.get(name=module_name),

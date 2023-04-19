@@ -1,0 +1,7 @@
+{
+  "name": "geoportal-vite",
+  "version": "1.0.0",
+  "dependencies": {
+    "vite": "^4.2.2"
+  }
+}
