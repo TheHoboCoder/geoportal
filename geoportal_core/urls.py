@@ -4,9 +4,8 @@ from django.conf.urls.static import static
 from . import views
 
 urlpatterns = [
-    path('', views.test_fronend, name="frontend"),
-    path('map/<str:module_name>/', views.show_map, name="map"),
-    path('select_module/', views.module_list, name="module_select"),
+    path('', views.module_list, name="module_select"),
+    path('map/<str:module_name>/', views.test_fronend, name="map"),
     path('modules/', views.ModuleListView.as_view()),
     path('modules/<str:module_name>/commands/', views.get_commands),
     path('modules/<str:module_name>/commands/<str:command_name>/', views.run_command, name="run_command"),

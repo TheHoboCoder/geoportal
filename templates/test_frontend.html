@@ -1,13 +1,15 @@
-{% load static %}
+{% extends "base.html" %}
 {% load django_vite %}
-<!doctype html>
-<html>
-  <head>
-    <title>Getting Started with Django and Vite</title>
-    {% vite_hmr_client %}
-    {% vite_asset 'js/main.js' %}
-  </head>
-  <body>
-    <div id="app"></div>
-  </body>
-</html>
+
+{% block title %}{{ module.alias }}{% endblock %}
+{% block head %}
+  {% vite_hmr_client %}
+  {% vite_asset 'js/main.js' %}
+{% endblock %}
+
+{% block navbar %}
+  <div class="d-flex flex-column" style="height: 100vh;">
+    {{ block.super }}
+    <div id="app" class="d-flex flex-grow-1 flex-column"></div>
+  </div>
+{% endblock %}
