@@ -39,7 +39,7 @@ function endMove(event){
             @mouseup="endMove"
         >
             {{  title }}
-            <button class="btn btn-secondary pull-right" @click="toggle">-</button>
+            <button class="btn btn-secondary float-end" @click="toggle">-</button>
         </div>
         <div v-if="isExpanded" class="card-body">
             <slot></slot>
