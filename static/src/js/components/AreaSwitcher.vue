@@ -1,7 +1,7 @@
 <script setup>
 import FloatingPanel from './FloatingPanel.vue';
 const props = defineProps(["areas", "modelValue"])
-defineEmits("update:modelValue")
+defineEmits(["update:modelValue"])
 </script>
 
 <template>
