@@ -40,3 +40,12 @@ export async function loadLayerContent(area_name, layer_name){
                     "can't load layer content")
 }
 
+export async function loadCommands(){
+    return fetchApi(`${HOST}/modules/${MODULE}/commands/`, 
+                    "can't load commands")
+}
+
+export async function runCommand(commandName, params){
+    return await fetch(`${HOST}/modules/${MODULE}/commands/${commandName}?`+ (new URLSearchParams(params)));
+}
+

@@ -4,11 +4,13 @@ import {transform} from 'ol/proj.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import DateControl from "./components/DateControl.vue";
 import LayersInspector from "./components/LayersInspector.vue";
-import {loadAreas, loadLayers, loadLayerContent} from "./api.js"
+import {loadAreas, loadLayers, loadLayerContent, loadCommands, runCommand} from "./api.js"
 import AreaSwitcher from "./components/AreaSwitcher.vue";
 import Feature from 'ol/Feature.js';
 import Polygon from 'ol/geom/Polygon.js';
 import { computed } from "@vue/reactivity";
+import FloatingPanel from "./components/FloatingPanel.vue";
+import GeoForm from "./components/forms/GeoForm.vue"
 
 const sourceSRID = 'EPSG:4326';
 const distanitionSRID = 'EPSG:3857'
@@ -24,6 +26,24 @@ const view = ref(null)
 const areas = ref([]);
 const areaCurrent = ref({});
 const vectorLayers = ref([]);
+
+const commands = ref({})
+const errorFields = ref({});
+
+loadCommands().then(json => commands.value = json);
+
+
+function submitForm(params){
+  runCommand(commands.value[0].name, params)
+  .then(async (response) => {
+    if(response.status == 400){
+      errorFields.value = await response.json();
+    }
+    else{
+      console.log(await response.json());
+    }
+  })
+}
 
 loadAreas().then(json => {
 
@@ -116,6 +136,14 @@ function dateChanged(date){
   <LayersInspector :layers="vectorLayers"/>
   <AreaSwitcher :areas="areas" v-model="areaCurrent" />
   <DateControl @dateChanged="dateChanged"/>
+
+  <FloatingPanel title="Команды" v-if="commands.length > 0">
+    <GeoForm :formFields="commands[0].schema.properties" 
+             :required-fields="commands[0].schema.required"
+             :error-messages="errorFields"
+             @submit="submitForm"/>
+  </FloatingPanel>
+
 
 
 </template>

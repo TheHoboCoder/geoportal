@@ -1,6 +1,7 @@
 from rest_framework.response import Response
 from geoportal_core.models import VectorFeature
 from geoportal_core.serializers import VectorFeatureSerializer
+from drf_jsonschema_serializer import to_jsonschema
 
 class CommandResponse:
     """updated_layers - в разработке, пока нужно передавать просто пустой список
@@ -33,7 +34,10 @@ class CommandView:
         pass
 
     def describe(self):
-        return {'alias': self.alias, 'description': self.description}
+        return {'name': self.name,
+                'alias': self.alias, 
+                'description': self.description, 
+                'schema': to_jsonschema(self.serializer_instance)}
 
     def run(self, request):
         serializer = self.serializer_class(data=request.GET)
@@ -47,4 +51,4 @@ class CommandView:
 class CommandList:
     def __init__(self, commands):
         self.commands = {command.name: command for command in commands}
-        self.description = {command.name: command.describe() for command in commands}
+        self.description = [command.describe() for command in commands]
