@@ -22,11 +22,12 @@ class LayerSerializer(serializers.ModelSerializer):
 class VectorFeatureSerializer(GeoFeatureModelSerializer):
     class Meta:
         model = VectorFeature
-        fields = ['properties', 'geometry', 'datetime']
+        fields = ['name', 'properties', 'geometry', 'datetime']
         geo_field = 'geometry'
         auto_bbox = True
 
     def get_properties(self, instance, fields):
         p = instance.properties
         p["datetime"] = instance.datetime
+        p["name"] = instance.name
         return p

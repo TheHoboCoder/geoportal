@@ -51,4 +51,4 @@ class CommandView:
 class CommandList:
     def __init__(self, commands):
         self.commands = {command.name: command for command in commands}
-        self.description = [command.describe() for command in commands]
+        self.description = {command.name: command.describe() for command in commands}
