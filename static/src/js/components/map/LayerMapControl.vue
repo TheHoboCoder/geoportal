@@ -4,6 +4,7 @@ import { ref, computed } from "vue";
 import VisibilityControl from '../utils/VisibilityControl.vue';
 import CardExpand from '../utils/CardExpand.vue';
 const props = defineProps({
+    "title": String,
     "vectorLayers": Array, 
     "mountTo": String
 });
@@ -23,8 +24,8 @@ function changeGroupVisibility(){
 
 <template>
 
-    <Teleport :to="mountTo">
-        <CardExpand title="Слои карты">
+    <SafeTeleport :to="mountTo">
+        <CardExpand :title="title" class="mt-2">
 
             <VisibilityControl 
                 title="Векторные слои"
@@ -62,7 +63,7 @@ function changeGroupVisibility(){
             </VisibilityControl>
 
         </CardExpand>
-    </Teleport>
+    </SafeTeleport>
 
     <ol-vector-layer v-for="layer in visibleVectorLayers" :key="layer.name">
         <ol-source-vector :features="layer.features">

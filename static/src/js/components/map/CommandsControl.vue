@@ -5,6 +5,7 @@ import GeoForm from "../forms/GeoForm.vue";
 import { featureToWKT, readFeatures } from "../../reprojection.js"
 import LayerMapControl from "./LayerMapControl.vue";
 import {getTopLeft} from 'ol/extent';
+import CardExpand from "../utils/CardExpand.vue";
 
 const props = defineProps(["mountTo"]);
 const commands = ref({});
@@ -109,8 +110,8 @@ function submitForm(params){
 
 <template>
 
-    <Teleport :to="mountTo">
-        <div class="m-2">
+    <SafeTeleport :to="mountTo">
+        <div>
             <label for="commandSelect"><b>Выберите команду</b></label>
             <select id="areaSelect" class="form-select m-1" v-model="selectedCommandName">
                 <option></option>
@@ -120,8 +121,10 @@ function submitForm(params){
                 </option>
             </select>
         </div>
-        <div v-if="commandSchema != null" class="m-3">
-            <GeoForm 
+        <CardExpand v-if="commandSchema != null" title="Форма" class="mt-3">
+            
+            <div class="m-3">
+                <GeoForm 
                 :form-fields="commandSchema" 
                 :requiredFields="requiredFields"
                 :error-messages="errorFields"
@@ -129,8 +132,11 @@ function submitForm(params){
                 @startAdd="startAdd"
                 @delete="deleteField"
                 @submit="submitForm"/>
-        </div>
-    </Teleport>
+            </div>
+
+        </CardExpand>
+        
+    </SafeTeleport>
 
     <ol-vector-layer v-for="(value, name) in geoFields" :key="name">
         <ol-source-vector :features="value.features">
@@ -157,7 +163,10 @@ function submitForm(params){
         </ol-vector-layer>
     </template>
 
-    <LayerMapControl v-if="layers.length > 0" :vectorLayers="layers" :mount-to="mountTo" />
+    <LayerMapControl v-if="layers.length > 0" 
+        :vectorLayers="layers" 
+        title="Результат"
+        :mount-to="mountTo" />
     
 
 </template>

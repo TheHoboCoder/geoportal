@@ -10,14 +10,7 @@
 {% block navbar %}
   <div class="d-flex flex-column" style="height: 100vh;">
     {{ block.super }}
-    <div class="flex-grow-1" id="map-container">
-      <div id="control-panel" class="px-2 pt-3">
-        <div id="main-block"></div>
-        <div id="command-block" class="mt-3"></div>
-      </div>
-      <div id="app"></div>
-      
-    </div>
+    <div id="app" class="flex-grow-1"></div>
     <footer></footer>
   </div>
 {% endblock %}

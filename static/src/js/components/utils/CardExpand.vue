@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from "vue";
 
-defineProps(['title'])
+defineProps(['title', "class"])
 const emit = defineEmits(["visibilityChanged"])
 
 const isExpanded = ref(true);
@@ -12,7 +12,7 @@ function toggle(){
 </script>
 
 <template>
-    <div class="card floating">
+    <div class="card floating" :class="class">
         <div class="card-header">
             {{  title }}
             <button class="btn btn-secondary float-end" @click="toggle">-</button>

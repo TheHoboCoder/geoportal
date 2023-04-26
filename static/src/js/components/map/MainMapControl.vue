@@ -72,7 +72,7 @@ const areaFeatures = computed(() => {
 
 <template>
 
-    <Teleport :to="mountTo">
+    <SafeTeleport :to="mountTo">
         <div class="m-2">
             <label for="areaSelect"><b>Выбор области</b></label>
             <select id="areaSelect" class="form-select m-1" v-model="currentAreaName">
@@ -81,9 +81,9 @@ const areaFeatures = computed(() => {
                 </option>
             </select>
         </div>
-    </Teleport>
+    </SafeTeleport>
 
-    <LayerMapControl :vectorLayers="vectorLayers" :mount-to="mountTo"/>
+    <LayerMapControl :vectorLayers="vectorLayers" :mount-to="mountTo" title="Слои карты"/>
 
     <ol-vector-layer>
         <ol-source-vector :features="areaFeatures">
@@ -93,5 +93,4 @@ const areaFeatures = computed(() => {
         </ol-style>
     </ol-vector-layer>
     
-
 </template>
