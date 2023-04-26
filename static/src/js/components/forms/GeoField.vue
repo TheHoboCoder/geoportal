@@ -1,9 +1,14 @@
 <script setup>
-import { ref, computed } from "@vue/reactivity";
+import { ref, computed, inject } from "vue";
 const props = defineProps(['fieldName', 'geometryType', "disabled"])
 const emit = defineEmits(["startAdd", "startEdit", "delete"]);
 
-const selected = ref(false)
+const geoFieldsFilled = inject("geoFieldsFilled");
+
+const selected = computed(() => {
+    return geoFieldsFilled.value.includes(props.fieldName);
+});
+
 const status = computed(() => {
     return selected.value ? "Выбрано" : "Не выбрано"
 });
@@ -31,11 +36,11 @@ function deleteFeature(){
                class="btn btn-primary ms-1 float-end" 
                value="✖">
 
-        <input type="button" 
+        <!-- <input type="button" 
                :disabled="disabled"
                @click="$emit('startEdit', fieldName, geometryType)"
                class="btn btn-primary ms-1 float-end" 
-               value="🖉">
+               value="🖉"> -->
 
         <input type="button"
                :disabled="disabled"

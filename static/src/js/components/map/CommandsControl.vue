@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed, inject } from "vue";
+import { ref, watch, computed, provide } from "vue";
 import { loadCommands, runCommand } from "../../api.js"
 import GeoForm from "../forms/GeoForm.vue";
 import { featureToWKT, readFeatures } from "../../reprojection.js"
@@ -58,6 +58,15 @@ watch(commandSchema, (newSchema) => {
         })
     );
 });
+
+
+const geoFieldFilled = computed(() => {
+    return geoFields.value == {} ? [] : Object.entries(geoFields.value).filter(value => {
+        return value[1].features.length > 0
+    }).map(value => value[0]);
+})
+
+provide('geoFieldsFilled', geoFieldFilled);
 
 function startAdd(field_name){
     currentGeomFieldName.value = field_name;
