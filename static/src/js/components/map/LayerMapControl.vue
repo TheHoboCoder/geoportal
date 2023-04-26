@@ -3,6 +3,7 @@ import { ref, computed } from "vue";
 
 import VisibilityControl from '../utils/VisibilityControl.vue';
 import CardExpand from '../utils/CardExpand.vue';
+import {getTopLeft} from 'ol/extent';
 const props = defineProps({
     "title": String,
     "vectorLayers": Array, 
@@ -67,6 +68,13 @@ function changeGroupVisibility(){
 
     <ol-vector-layer v-for="layer in visibleVectorLayers" :key="layer.name">
         <ol-source-vector :features="layer.features">
+            <ol-overlay v-for="feature in layer.features" 
+                        :key="feature.getId()"
+                        :position="getTopLeft(feature.getGeometry().getExtent())">
+                <div class="p-2">
+                    <b>{{ feature.get("name") }}</b>
+                </div>
+            </ol-overlay>
         </ol-source-vector>
     </ol-vector-layer>
 
