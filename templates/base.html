@@ -22,12 +22,20 @@
                         </li>                  
                     </ul>
                 </div>
-                {% if request.user %}
+                
                 <form class="form-inline my-2 my-lg-0">
-                    <span class="text-white"> Вы вошли как <b>{{ request.user.username}}</b></span>
-                    <a class="text-info" href="{% url 'admin:index' %}">Управление</a>
+                    {% if request.user.is_authenticated %}
+                        <span class="text-white"> Вы вошли как <b>{{ request.user.username}}</b></span>
+                    {% endif %}
+                    <a class="text-info" href="{% url 'admin:index' %}">
+                        {% if request.user.is_authenticated %}
+                            Управление
+                        {% else %}
+                            Войти
+                        {% endif %}
+                    </a>
                 </form>         
-                {% endif %}
+                
             </div>
         </nav> 
         {% endblock %}
