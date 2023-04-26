@@ -1,7 +1,12 @@
 <script setup>
 import GeoField from './GeoField.vue';
-const props = defineProps(['formFields', 'requiredFields', 'errorMessages'])
-defineEmits(["submit"])
+const props = defineProps([
+    'formFields', 
+    'requiredFields', 
+    'errorMessages', 
+    "currentGeomFieldName"
+]);
+defineEmits(["submit", "startAdd", "startEdit", "delete"])
 import { ref } from "vue";
 
 let pam = {}
@@ -13,7 +18,6 @@ for (const key in props.formFields){
 }
 
 const formVars = ref(pam);
-const currentGeomFieldName = ref("");
 
 function onSubmit(event){
     console.log(Object.entries(formVars.value))
@@ -24,10 +28,6 @@ let supportedTypes = ["integer", "number", "string", "boolean"]
 function isSimple(field_value){
     return Array.isArray(field_value.type) || 
            supportedTypes.includes(field_value.type) && !Object.hasOwn(field_value, 'geom_type');
-}
-
-function onStartAdd(fieldName, featureType){
-    currentGeomFieldName.value = fieldName;
 }
 
 function isInvalid(fieldName){
@@ -54,7 +54,9 @@ function isInvalid(fieldName){
                         :fieldName="field_name" 
                         :geometryType="field_value.geom_type"
                         :disabled="currentGeomFieldName != '' && currentGeomFieldName != field_name"
-                        @startAdd="onStartAdd"
+                        @startAdd="(name, type) => $emit('startAdd', name)"
+                        @startEdit="(name, type) => $emit('startEdit', name)"
+                        @delete="(name) => $emit('delete', name)"
                         :class="isInvalid(field_name) ? 'is-invalid' : ''"
             />
             <div v-else>
