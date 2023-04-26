@@ -117,13 +117,6 @@ DATABASES = {
 DJANGO_VITE_ASSETS_PATH = os.path.join(BASE_DIR, "static", "dist")
 DJANGO_VITE_DEV_MODE = True
 
-GEOSERVER = {
-    'HOST': '127.0.0.1',
-    'PORT': '8080',
-    'USER': 'admin',
-    'PASSWORD': 'geoserver'
-}
-
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
