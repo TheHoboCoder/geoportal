@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch, computed } from "vue";
 import { loadAreas, loadLayers, loadLayerContent } from "../../api.js"
-import { sourceSRID, distanitionSRID, geoJsonReader } from "../../reprojection.js"
+import { reprojectGeometryToMap, readFeatures } from "../../reprojection.js"
 import LayerMapControl from "./LayerMapControl.vue";
 import Polygon from 'ol/geom/Polygon.js';
 import Feature from 'ol/Feature.js';
@@ -17,13 +17,11 @@ loadAreas().then(json => {
     let res = {};
     let name = "";
     json.forEach((area, index) => {
-        let poly = new Polygon(area.bbox.coordinates);
-        poly.transform(sourceSRID, distanitionSRID);
         res[area.name] = {
             'name': area.name,
             'alias': area.alias,
             'feature': new Feature({
-                'geometry': poly,
+                'geometry': reprojectGeometryToMap(new Polygon(area.bbox.coordinates)),
                 'name': area.name,
             })
         };
@@ -56,7 +54,7 @@ watch(areaCurrent, async (newArea) => {
         if(l.layer_type == 'V'){
         let geojson = await loadLayerContent(newArea.name, l.name);
         l.visible = true;
-        l.features = geoJsonReader.readFeatures(geojson);
+        l.features = readFeatures(geojson);
         result_layers.push(l);
         }
         else{
