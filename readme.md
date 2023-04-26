@@ -13,7 +13,8 @@
 
 *фронтенд*:
 - OpenLayers
-- *Vue.js* (в процессе перехода, пока jquery)
+- Vue.js
+- Vue3-openlayers
 
 
 ## Функционал
