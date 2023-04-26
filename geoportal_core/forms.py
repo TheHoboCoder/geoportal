@@ -24,22 +24,25 @@ class CreateGISModuleForm(forms.ModelForm):
             utils.unzip_file(cleaned_data["module_file"], cleaned_data["name"])
         except BadZipfile as zip_error:
             utils.remove_module_dir(cleaned_data["name"])
-            raise ValidationError(f"Unable to unpack zip. Check archive is correct.")
+            raise ValidationError(f"Невозможно открыть архив. Проверьте, что файл не поврежден. ({zip_error})")
         except OSError as os_error:
             utils.remove_module_dir(cleaned_data["name"])
-            raise ValidationError(f"Error when creating folders")
+            raise ValidationError(f"Ошибка при создании файлов: {os_error}")
         except Exception as err:
             utils.remove_module_dir(cleaned_data["name"])
-            raise ValidationError(f"Unknown error: {err}")
+            raise ValidationError(f"Неизвестная ошибка при распаковке архива: {err}")
         
         try:
             utils.try_import(cleaned_data["name"])
-        except ModuleNotFoundError:
+        except ModuleNotFoundError as not_found:
             utils.remove_module_dir(cleaned_data["name"])
-            raise ValidationError('No module_config file')
-        except AttributeError:
+            raise ValidationError(f'Невозможно открыть файл конфигурации module_config.py: {not_found}')
+        except AttributeError as att:
             utils.remove_module_dir(cleaned_data["name"])
-            raise ValidationError('Config must contain COMMANDS and SCHEMA')
+            raise ValidationError(f'Ошибка при чтении COMMANDS and SCHEMA: {att}')
+        except Exception as err:
+            utils.remove_module_dir(cleaned_data["name"])
+            raise ValidationError(f"Неизвестная ошибка при импортировании конфигурации: {err}")
 
     class Meta:
         model = GISModule

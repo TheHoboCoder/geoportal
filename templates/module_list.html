@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Выбор модуля{% endblock %}
+
+{% block content %}
+    <div class="container-md">
+        <div class="row mt-4">
+            <div class="column">
+                {% for module in module_list %}
+                <div>
+                    <h4><a href="{% url 'map' module.name %}">{{ module.alias }}</a></h4>
+                    <p>{{ module.summary }}</p>
+                    <p class="fs-6"><i><b>Разработчик: </b>{{ module.owner_name }}</i></p>
+                </div>
+                <hr>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

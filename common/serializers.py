@@ -1,5 +1,6 @@
 from rest_framework_gis.fields import GeometryField
 from django.core.exceptions import ValidationError
+from drf_jsonschema_serializer.converters import Converter, converter
 
 # rest_framework_gis рассчитан на сериализацию/десериализацию конкрентных моделей,
 # и поэтому GeometryField никак не проверяет тип геометрии (в отличие от полей формы из contrib.gis)
@@ -48,3 +49,22 @@ class PolygonField(BaseGeometryField):
 
 class MultiPolygonField(BaseGeometryField):
     geom_type = "MultiPolygon"
+
+
+@converter
+class GeofieldConverter(Converter):
+    # для простоты геометрия в WKT
+    type = "string"
+    field_class = [GeometryCollectionField, 
+                   PointField, 
+                   MultiPointField,
+                   LineStringField,
+                   MultiLineStringField,
+                   PolygonField,
+                   MultiPolygonField
+                   ]
+    
+    def convert(self, field):
+        result = super().convert(field)
+        result["geom_type"] = field.geom_type
+        return result

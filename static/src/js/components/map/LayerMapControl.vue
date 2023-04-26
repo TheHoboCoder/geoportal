@@ -1,0 +1,81 @@
+<script setup>
+import { ref, computed } from "vue";
+
+import VisibilityControl from '../utils/VisibilityControl.vue';
+import CardExpand from '../utils/CardExpand.vue';
+import {getTopLeft} from 'ol/extent';
+const props = defineProps({
+    "title": String,
+    "vectorLayers": Array, 
+    "mountTo": String
+});
+
+const visibleVectorLayers = computed(() => {
+    return props.vectorLayers.filter(layer => layer.visible);
+});
+
+const vectorsIsVisible = ref(true);
+
+function changeGroupVisibility(){
+    vectorsIsVisible.value = !vectorsIsVisible.value;
+    props.vectorLayers.forEach(l => l.visible = vectorsIsVisible.value);
+}
+
+</script>
+
+<template>
+
+    <SafeTeleport :to="mountTo">
+        <CardExpand :title="title" class="mt-2">
+
+            <VisibilityControl 
+                title="Векторные слои"
+                :expanded="true"
+                :visible="vectorsIsVisible"
+                @visibilityChanged="changeGroupVisibility">
+
+                <ul class="list-group list-group-flush">
+                    <li v-for="l in vectorLayers" :key="l.name" class="list-group-item">
+                        <VisibilityControl 
+                             :title="l.alias" 
+                             :visible="l.visible"
+                             :expanded="false"
+                             @visibilityChanged="() => l.visible = !l.visible">
+
+                             <ul class="list-group list-group-flush">
+                                <li v-for="feature in l.features" :key="feature.getId()" class="list-group-item">
+                                    <VisibilityControl :title="feature.get('name')" :visible="true">
+                                        <ul class="list-group list-group-flush">
+                                            <li v-for="(value, key) in feature.getProperties()" class="list-group-item" >
+                                                <div v-if="key != 'geometry'" >
+                                                    <b>{{ key }}:</b> {{ value }}
+                                                </div>
+                                            </li>
+                                        </ul>
+                                        
+                                    </VisibilityControl>
+                                 </li>
+                             </ul>
+                                
+
+                        </VisibilityControl>
+                    </li>
+                </ul>
+            </VisibilityControl>
+
+        </CardExpand>
+    </SafeTeleport>
+
+    <ol-vector-layer v-for="layer in visibleVectorLayers" :key="layer.name">
+        <ol-source-vector :features="layer.features">
+            <ol-overlay v-for="feature in layer.features" 
+                        :key="feature.getId()"
+                        :position="getTopLeft(feature.getGeometry().getExtent())">
+                <div class="p-2">
+                    <b>{{ feature.get("name") }}</b>
+                </div>
+            </ol-overlay>
+        </ol-source-vector>
+    </ol-vector-layer>
+
+</template>

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load django_vite %}
+
+{% block title %}{{ module.alias }}{% endblock %}
+{% block head %}
+  {% vite_hmr_client %}
+  {% vite_asset 'js/main.js' %}
+{% endblock %}
+
+{% block navbar %}
+  <div class="d-flex flex-column" style="height: 100vh;">
+    {{ block.super }}
+    <div id="app" class="flex-grow-1"></div>
+    <footer></footer>
+  </div>
+{% endblock %}

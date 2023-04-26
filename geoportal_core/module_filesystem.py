@@ -23,11 +23,12 @@ def unzip_file(file, module_name, path=settings.MODULE_PATH):
         else:
         # all files placed on same level: archive/<zipped_files>
             create_name = os.path.join(module_name, name)
+        create_name = os.path.join(path, create_name)
         if name.endswith('/'):
-            if not os.path.exists(os.path.join(path, create_name)):
+            if not os.path.exists(create_name):
                 os.mkdir(create_name)
         else:
-            outfile = open(os.path.join(path, create_name), 'wb')
+            outfile = open(create_name, 'wb')
             outfile.write(zfobj.read(name))
             outfile.close()
 
