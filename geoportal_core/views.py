@@ -53,7 +53,9 @@ class LayerContentListView(ListAPIView):
         # TODO:
         self.serializer_class = serializers.VectorFeatureSerializer if layer.is_vector() else None
 
-        features_filtered = feature_cls.objects.filter_features(self.kwargs["layer_name"],
+        features_filtered = feature_cls.objects.filter_features(
+                                                       self.kwargs["module_name"],
+                                                       self.kwargs["layer_name"],
                                                        self.kwargs["area_name"])
         
         datetime_start = self.request.query_params.get('datetime_start')

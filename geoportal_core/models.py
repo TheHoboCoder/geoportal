@@ -124,15 +124,16 @@ class Layer(models.Model):
         verbose_name = "Слой"
 
 class FeatureManager(models.Manager):
-    def filter_features(self, layer_name, area_name):
-        return self.filter(Q(layer__name=layer_name) &
-                        Q(area__name=area_name))
+    def filter_features(self, module_name, layer_name, area_name):
+        return self.filter(Q(area__module__name=module_name) &
+                           Q(layer__name=layer_name) &
+                           Q(area__name=area_name))
     
     def datetime_filter(self, queryset, datetime_start, datetime_end=None):
         datetime_end = datetime_end if datetime_end is not None else datetime_start
         return queryset.filter(Q(datetime__isnull=True) | 
-                           (Q(datetime__gte=datetime_start) &
-                            Q(datetime__lte=datetime_end)))
+                              (Q(datetime__gte=datetime_start) &
+                               Q(datetime__lte=datetime_end)))
     
 class Feature(models.Model):
     name = models.CharField(max_length=50, blank=True, verbose_name="Название")
