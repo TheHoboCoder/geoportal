@@ -2,6 +2,7 @@
 import { ref, watch, computed } from "vue";
 import { loadAreas, loadLayers, loadLayerContent } from "../../api.js"
 import { reprojectGeometryToMap, readFeatures } from "../../reprojection.js"
+import { getTopLeft } from 'ol/extent';
 import LayerMapControl from "./LayerMapControl.vue";
 import Polygon from 'ol/geom/Polygon.js';
 import Feature from 'ol/Feature.js';
@@ -35,12 +36,12 @@ loadAreas().then(json => {
 
 });
 
-const areaCurrent = computed(() => {
+const currentArea = computed(() => {
     return areas.value != null ? areas.value[currentAreaName.value] : null;
 });
 
 
-watch(areaCurrent, async (newArea) => {
+watch(currentArea, async (newArea) => {
 
     if(newArea == null){
         return;
@@ -52,10 +53,10 @@ watch(areaCurrent, async (newArea) => {
     let result_layers = [];
     for(const l of layers_json){
         if(l.layer_type == 'V'){
-        let geojson = await loadLayerContent(newArea.name, l.name);
-        l.visible = true;
-        l.features = readFeatures(geojson);
-        result_layers.push(l);
+            let geojson = await loadLayerContent(newArea.name, l.name);
+            l.visible = true;
+            l.features = readFeatures(geojson);
+            result_layers.push(l);
         }
         else{
         //TODO
@@ -85,12 +86,25 @@ const areaFeatures = computed(() => {
 
     <LayerMapControl :vectorLayers="vectorLayers" :mount-to="mountTo" title="Слои карты"/>
 
-    <ol-vector-layer>
+    <ol-vector-layer v-if="areas != null">
         <ol-source-vector :features="areaFeatures">
         </ol-source-vector>
         <ol-style>
           <ol-style-stroke color="orange" :width="7" :lineDash="[10, 12]"></ol-style-stroke>
         </ol-style>
+        <ol-overlay v-for="(value, k) in areas" 
+                    :key="value.feature.getId()"
+                    :position="getTopLeft(value.feature.getGeometry().getExtent())">
+            <div class="p-2 area-caption">
+                <b>{{ value.alias }}</b>
+            </div>
+        </ol-overlay>
     </ol-vector-layer>
     
 </template>
+
+<style>
+.area-caption{
+    background-color: white;
+}
+</style>
