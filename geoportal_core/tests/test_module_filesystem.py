@@ -1,5 +1,5 @@
 from unittest import TestCase
-import geoportal_core.module_filesystem as utils
+import common.internal.module_filesystem as utils
 import os, shutil, sys
 from zipfile import ZipFile, BadZipfile
 from pathlib import Path

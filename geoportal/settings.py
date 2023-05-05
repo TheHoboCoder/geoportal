@@ -59,15 +59,6 @@ INSTALLED_APPS = [
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 
-MODULES = []
-with os.scandir(MODULE_PATH) as it:
-    for entry in it:
-        if entry.is_dir() and \
-            not entry.name.startswith('.') and \
-            not entry.name in MODULES:
-            #INSTALLED_APPS.append(entry.name)
-            MODULES.append(entry.name)
-
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',

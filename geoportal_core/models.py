@@ -2,12 +2,11 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.gis.db import models as gis_models
 from django.contrib.gis.geos import Point, Polygon, GeometryCollection
-import importlib
 from django.db import transaction
-import importlib
 from django.db.models import Q
 from common import models as c_models
-from .module_filesystem import remove_module_dir
+from common.internal.modules import MODULES
+from common.internal.module_filesystem import remove_module_dir
     
 class GISModule(models.Model):
     """ Модуль для установки
@@ -26,9 +25,7 @@ class GISModule(models.Model):
     
     @transaction.atomic
     def import_data(self):
-        importlib.invalidate_caches()
-        config = importlib.import_module(f"{self.name}.module_config", package=None)
-        schema = config.SCHEMA
+        schema = MODULES[self.name].schema
         for area in map(lambda t: Area.from_po(po=t, module=self), schema.areas):
             area.save()
         for layer in map(lambda t: Layer.from_po(po=t, module=self), schema.layers):

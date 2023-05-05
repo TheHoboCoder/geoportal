@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework_gis.pagination import GeoJsonPagination
-import importlib
+from common.internal.modules import MODULES
 
 def show_map(request, module_name):
     return render(request, 'map.html', { 
@@ -75,16 +75,16 @@ class LayerContentListView(ListAPIView):
 
 def get_module_config(module_name):
     gis_module = get_object_or_404(models.GISModule, name=module_name)
-    return importlib.import_module(f"{module_name}.module_config", package=None)
+    return MODULES[module_name]
 
 @api_view(('GET', ))
 def get_commands(request, module_name):
     module_config = get_module_config(module_name)
-    return Response(data=module_config.COMMANDS.description)
+    return Response(data=module_config.command_list.description)
 
 @api_view(('GET', ))
 def run_command(request, module_name, command_name):
     module_config = get_module_config(module_name)
-    if command_name not in module_config.COMMANDS.commands:
+    if command_name not in module_config.command_list.commands:
         return Response(data=['No such command'], status=status.HTTP_404_NOT_FOUND)
-    return module_config.COMMANDS.commands[command_name].run(request)
+    return module_config.command_list.commands[command_name].run(request)
