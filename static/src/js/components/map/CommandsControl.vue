@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed } from "vue";
+import { ref, watch, computed, provide } from "vue";
 import { loadCommands, runCommand } from "../../api.js"
 import GeoForm from "../forms/GeoForm.vue";
 import { featureToWKT, readFeatures } from "../../reprojection.js"
