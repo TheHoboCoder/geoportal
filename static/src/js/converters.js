@@ -51,3 +51,17 @@ export function createStyles(styles){
     }
     return styles.map(value => createStyle(value))
 }
+
+// с помощью функции convert () можно заставить Overpass выводить данные,
+// в формате, близком к GeoJson. Но его нужно довести до валидного GeoJson
+export function overpassJsonToGeojson(json){
+    json.type = 'FeatureCollection';
+    json.features = json.elements.map(feature => {
+        feature.type = "Feature";
+        feature.properties = feature.tags;
+        delete feature.tags;
+        return feature;
+    });
+    delete json.elements;
+    return json;
+}

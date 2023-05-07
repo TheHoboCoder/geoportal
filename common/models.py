@@ -182,6 +182,7 @@ class VectorLayerContent(BaseVectorLayerContent):
 class Formats(enum.Enum):
     GEOJSON = 'geojson'
     GML = 'gml'
+    OVERPASS = 'overpass'
 
 class ExternalLayerContent(BaseVectorLayerContent, ABC):
     """

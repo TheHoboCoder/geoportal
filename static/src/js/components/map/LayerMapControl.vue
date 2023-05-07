@@ -27,7 +27,7 @@ watch(() => props.layers, async (newLayers) => {
             if(l.layer_content.type == 'url'){
                 sourceProjection = `EPSG:${l.layer_content.srid}`;
                 sourceFormat = l.layer_content.format;
-                const supportedFormats = ["geojson", "gml"];
+                const supportedFormats = ["geojson", "gml", "overpass"];
                 if(!supportedFormats.includes(sourceFormat)){
                     throw new Error(`unsupported format: ${sourceFormat}`)
                 }
@@ -35,7 +35,7 @@ watch(() => props.layers, async (newLayers) => {
                 if(!response.ok){
                     throw new Error(`unable to load ${l.layer_content.url}, error ${response.status}`);
                 }
-                if(sourceFormat == 'geojson'){
+                if(sourceFormat == 'geojson' || sourceFormat == 'overpass'){
                     source = await response.json();
                 }
                 else{
