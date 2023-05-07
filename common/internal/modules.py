@@ -7,9 +7,10 @@ class ModuleLoadException(Exception):
 
 # информация о модуле
 class Module:
-    def __init__(self, name, command_list, layer_style_functions, schema):
+    def __init__(self, name, command_list, layer_styles, layer_style_functions, schema):
         self.name = name
         self.command_list = command_list
+        self.layer_styles = layer_styles
         self.layer_style_functions = layer_style_functions
         self.schema = schema
 
@@ -19,12 +20,11 @@ class ModulesList:
     
     def install_module(self, module_name):
         config = importlib.import_module(f"{module_name}.module_config", package=None)
-        f_l = filter(lambda layer: layer.layer_content is not None 
-                                   and layer.layer_content.styling_function is not None, 
-                     config.SCHEMA.layers)
-        style_functions = {l: l.layer_content.styling_function for l in f_l}
+        layer_styles = {layer.name: layer.styles for layer in config.SCHEMA.layers}
+        style_functions = {l.name: l.get_styling_function() for l in config.SCHEMA.layers
+                                                            if l.get_styling_function() is not None}
         self.__module_dict[module_name] = Module(module_name, config.COMMANDS,
-                                                 style_functions, config.SCHEMA)
+                                                 layer_styles, style_functions, config.SCHEMA)
         
     def load_module(self, file, module_name):
         try:
