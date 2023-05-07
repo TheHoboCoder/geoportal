@@ -158,6 +158,11 @@ class VectorFeature(Feature):
                    properties=po.properties,
                    geometry=GeometryCollection(po.geometry))
     
+    def to_po(self):
+        return c_models.VectorFeaturePO(name=self.name, 
+                                        properties=self.properties, 
+                                        geometry=tuple(self.geometry))
+    
     class Meta:
         verbose_name = "Векторные объекты"
 

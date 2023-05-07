@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch, computed } from "vue";
-import { loadAreas, loadLayers, loadLayerContent } from "../../api.js"
-import { reprojectGeometryToMap, readFeatures } from "../../reprojection.js"
+import { loadAreas, loadLayers } from "../../api.js"
+import { reprojectGeometryToMap } from "../../reprojection.js"
 import { getTopLeft } from 'ol/extent';
 import LayerMapControl from "./LayerMapControl.vue";
 import Polygon from 'ol/geom/Polygon.js';
@@ -11,7 +11,7 @@ const props = defineProps(["view", "mountTo"]);
 
 const areas = ref(null);
 const currentAreaName = ref("");
-const vectorLayers = ref([]);
+const layers = ref([]);
 
 loadAreas().then(json => {
 
@@ -46,23 +46,9 @@ watch(currentArea, async (newArea) => {
     if(newArea == null){
         return;
     }
-
     // TODO: check view is not null, maybe fire event instead
     props.view.fit(newArea.feature.getGeometry(), {duration: 800});
-    let layers_json = await loadLayers(newArea.name);
-    let result_layers = [];
-    for(const l of layers_json){
-        if(l.layer_type == 'V'){
-            let geojson = await loadLayerContent(newArea.name, l.name);
-            l.visible = true;
-            l.features = readFeatures(geojson);
-            result_layers.push(l);
-        }
-        else{
-        //TODO
-        }
-    }
-    vectorLayers.value = result_layers;
+    layers.value = await loadLayers(newArea.name);
 });
 
 const areaFeatures = computed(() => {
@@ -84,7 +70,7 @@ const areaFeatures = computed(() => {
         </div>
     </SafeTeleport>
 
-    <LayerMapControl :vectorLayers="vectorLayers" :mount-to="mountTo" title="Слои карты"/>
+    <LayerMapControl :layers="layers" :mount-to="mountTo" title="Слои карты"/>
 
     <ol-vector-layer v-if="areas != null">
         <ol-source-vector :features="areaFeatures">

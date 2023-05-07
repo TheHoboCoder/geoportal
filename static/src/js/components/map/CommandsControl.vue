@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed, provide } from "vue";
+import { ref, watch, computed } from "vue";
 import { loadCommands, runCommand } from "../../api.js"
 import GeoForm from "../forms/GeoForm.vue";
 import { featureToWKT, readFeatures } from "../../reprojection.js"
@@ -11,7 +11,7 @@ const props = defineProps(["mountTo"]);
 const commands = ref({});
 const errorFields = ref({});
 const selectedCommandName = ref("");
-const layers = ref([]);
+const myLayers = ref([]);
 
 loadCommands().then(json => commands.value = json);
 
@@ -105,12 +105,7 @@ function submitForm(params){
     else{
       const json = await response.json();
       errorFields.value = {};
-      layers.value.push({
-         'name': currentCommand.value.name+`_res_${layers.length + 1}`,
-         'alias': `Результат выполнения команды ${currentCommand.value.name}`,
-         'visible': true,
-         'features': readFeatures(json.gis_data)
-      });
+      myLayers.value = json.layers;
     }
   })
 }
@@ -172,8 +167,8 @@ function submitForm(params){
         </ol-vector-layer>
     </template>
 
-    <LayerMapControl v-if="layers.length > 0" 
-        :vectorLayers="layers" 
+    <LayerMapControl v-if="myLayers.length > 0" 
+        :layers="myLayers" 
         title="Результат"
         :mount-to="mountTo" />
     

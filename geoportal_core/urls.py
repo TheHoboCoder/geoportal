@@ -12,7 +12,7 @@ urlpatterns = [
     path('modules/<str:module_name>/areas/', views.AreaListView.as_view()),
     path('modules/<str:module_name>/areas/<str:area_name>/', views.AreaDetailView.as_view()),
     path('modules/<str:module_name>/areas/<str:area_name>/layers/', views.LayerListView.as_view()),
-    path('modules/<str:module_name>/areas/<str:area_name>/layers/<str:layer_name>/', views.LayerContentListView.as_view()),
+    path('modules/<str:module_name>/areas/<str:area_name>/layers/<str:layer_name>/', views.LayerContentListView.as_view(), name="layer_content"),
 ] 
 
 if settings.DEBUG:

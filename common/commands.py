@@ -1,22 +1,21 @@
 from rest_framework.response import Response
 from geoportal_core.models import VectorFeature
 from geoportal_core.serializers import VectorFeatureSerializer
+from .internal.serializers import LayerPOSerializer
 from drf_jsonschema_serializer import to_jsonschema
 
 class CommandResponse:
-    """updated_layers - в разработке, пока нужно передавать просто пустой список
-       gis_data - список объектов VectorFeaturePO (см. models.py)
+    """gis_data - список объектов LayerPO с векторными объектами (см. models.py)
        custom_data - словарь с данными (только примитивные типы Python)
     """
-    def __init__(self, updated_layers, gis_data, custom_data: dict):
-        self.updated_layers = updated_layers
-        self.gis_data = gis_data
+    def __init__(self, layers, custom_data: dict):
+        self.gis_data = layers
         self.custom_data = custom_data
 
     def serialize(self):
-        return {'updated_layers': self.updated_layers, 
-                'gis_data': self.gis_data,
-                'custom_data': self.custom_data,
+        return {
+            'layers': LayerPOSerializer(self.gis_data, many=True).data,
+            'custom_data': self.custom_data,
         }
 
 class CommandView:
@@ -42,10 +41,7 @@ class CommandView:
     def run(self, request):
         serializer = self.serializer_class(data=request.GET)
         if serializer.is_valid(raise_exception=True):
-            response = self.handler(serializer.validated_data).serialize()
-            gis_data = map(lambda t: VectorFeature.from_po(po=t, layer=None, area=None), response['gis_data'])
-            response['gis_data'] = VectorFeatureSerializer(gis_data, many=True).data
-            return Response(data=response)
+            return Response(data=self.handler(serializer.validated_data).serialize())
 
 
 class CommandList:
