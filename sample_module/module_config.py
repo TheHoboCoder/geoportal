@@ -1,10 +1,13 @@
-from .views import DrawLineView
+from .views import DrawLineView, StylingPrimerView, OverpassPrimerView
 from common.models import AreaPO, LayerPO
 from common.commands import CommandList
 from common.schema import Schema
+from common.styling import VectorStyle, FillStyle, StrokeStyle
 
 COMMANDS = CommandList(
     (DrawLineView(),
+     StylingPrimerView(),
+     OverpassPrimerView()
     #other command
     )
 )
@@ -26,9 +29,14 @@ SCHEMA = Schema(
            #other area
            ),
 
+    # Для слоя можно указать стиль или функцию для вычисления стиля
     layers=(LayerPO(name="ground_layer",
                     ordering=0,
-                    alias="Векторный слой 1"), 
+                    alias="Векторный слой 1",
+                    styles=[
+                        VectorStyle(fill=FillStyle('rgba(131, 122, 235, 0.4)'),
+                                    stroke=StrokeStyle('rgb(131, 122, 235)', 2))
+                     ]), 
 
             LayerPO(name="vector_layer_1",
                     ordering=1,
