@@ -160,7 +160,7 @@ class VectorLayerContent(BaseVectorLayerContent):
             Defaults to None.
         """
         super().__init__(styling_function)
-        self.__vector_objects = vector_objects
+        self.__vector_objects = list(vector_objects)
         self.apply_styles()
 
     @property
