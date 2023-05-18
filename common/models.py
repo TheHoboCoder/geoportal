@@ -148,7 +148,7 @@ class BaseVectorLayerContent(ABC):
 
     
 class VectorLayerContent(BaseVectorLayerContent):
-    def __init__(self, vector_objects:tuple|list, styling_function=None):
+    def __init__(self, vector_objects, styling_function=None):
         """Базовый контент слоя
 
         Args:

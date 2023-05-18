@@ -19,7 +19,7 @@ class RangeConverter:
     """Преобразует значение из одного диапазона в другой.
        Может использоваться для создания цветовых шкал.
     """
-    def __init__(self, ranges: tuple|list, min_value=None, max_value=None):
+    def __init__(self, ranges, min_value=None, max_value=None):
         """
         Args:
             ranges (tuple|list): список кортежей:
