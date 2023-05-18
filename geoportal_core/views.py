@@ -40,6 +40,11 @@ class AreaDetailView(RetrieveAPIView):
 class LayerListView(ListAPIView):
     serializer_class = serializers.LayerSerializer
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['kwargs'] = self.kwargs
+        return context
+
     def get_queryset(self):
         return models.Layer.objects.path_filter(self.kwargs)
 

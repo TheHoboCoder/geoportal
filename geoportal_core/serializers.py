@@ -25,7 +25,7 @@ class LayerSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         req = self.context["request"]
-        path_kwargs = resolve(req.path).kwargs
+        path_kwargs = self.context["kwargs"]
         module_name = path_kwargs["module_name"]
         path_kwargs["layer_name"] = instance.name
         res = super().to_representation(instance)
