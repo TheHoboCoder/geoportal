@@ -7,7 +7,7 @@ import LayerMapControl from "./LayerMapControl.vue";
 import {getTopLeft} from 'ol/extent';
 import CardExpand from "../utils/CardExpand.vue";
 
-const props = defineProps(["mountTo"]);
+const props = defineProps(["mountTo", "areaName"]);
 const commands = ref({});
 const errorFields = ref({});
 const selectedCommandName = ref("");
@@ -97,7 +97,7 @@ function submitForm(params){
     }
   });
   
-  runCommand(currentCommand.value.name, params)
+  runCommand(currentCommand.value.name, params, props.areaName)
   .then(async (response) => {
     if(response.status == 400){
       errorFields.value = await response.json();

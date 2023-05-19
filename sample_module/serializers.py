@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from common import serializers as geo_serializers
+from common.validators import WithinArea, NoIntersections
 
 """ сериализаторы задают входные данные для команды
 Поддерживаемые типы полей:
@@ -21,8 +22,11 @@ class DrawLineSerializer(serializers.Serializer):
     int_param = serializers.IntegerField(label="Количество", min_value=1, max_value=5)
     # для строковых - максимальную длину
     string_param = serializers.CharField(label="Введите test", max_length=50)
-    point_start = geo_serializers.PointField()
-    point_end = geo_serializers.PointField()
+    # для полей с геометрией можно задать валидаторы
+    # - WithinArea - проверяет, что геометрия находится в заданной области
+    # - NoIntersection - проверка на пересечения с другой геометрией (на указанном слое или глобально в модуле)
+    point_start = geo_serializers.PointField(validators=[WithinArea()])
+    point_end = geo_serializers.PointField(validators=[WithinArea(), NoIntersections()])
 
     # для поля можно задать алгоритм валидации
     def validate_string_param(self, val):

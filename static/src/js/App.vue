@@ -6,13 +6,15 @@ import MainMapControl from "./components/map/MainMapControl.vue";
 import CommandsControl from "./components/map/CommandsControl.vue";
 import CardExpand from "./components/utils/CardExpand.vue";
 
-
 const center = ref(reproject([34, 68]));
 const zoom = ref(7);
 const view = ref(null);
 
 const commandsExpanded = ref(false);
 const panelExpanded = ref(true);
+
+// TODO: maybe make common state to get current areas
+const areaName = ref("");
 
 function dateChanged(date){
   console.log(date);
@@ -66,9 +68,9 @@ function dateChanged(date){
             <ol-source-osm />
           </ol-tile-layer>
 
-          <MainMapControl mount-to="#main-block" :view="view"/>
+          <MainMapControl mount-to="#main-block" :view="view" @area-changed="(name) => areaName = name"/>
 
-          <CommandsControl v-if="commandsExpanded" mount-to="#command-block" />
+          <CommandsControl v-if="commandsExpanded" mount-to="#command-block" :area-name="areaName" />
 
       </ol-map>
 

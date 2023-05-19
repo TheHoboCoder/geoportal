@@ -74,6 +74,9 @@ class Area(models.Model):
                     module=module,
                     alias=po.alias, 
                     bbox=Polygon.from_bbox(po.bbox))
+    
+    def to_po(self):
+        return c_models.AreaPO(name=self.name, alias=self.alias, bbox=self.bbox.extent)
 
     class Meta:
         unique_together = ['name', 'module']

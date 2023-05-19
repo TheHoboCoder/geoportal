@@ -54,7 +54,11 @@ export async function loadCommands(){
                     "can't load commands")
 }
 
-export async function runCommand(commandName, params){
+export async function runCommand(commandName, params, area_name){
+    params = { 
+        ...params, 
+        'area_name': area_name, 
+    };
     return await fetch(`${HOST}/modules/${MODULE}/commands/${commandName}?`
                         + (new URLSearchParams(params)));
 }

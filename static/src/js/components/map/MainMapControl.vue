@@ -8,6 +8,7 @@ import Polygon from 'ol/geom/Polygon.js';
 import Feature from 'ol/Feature.js';
 
 const props = defineProps(["view", "mountTo"]);
+const emit = defineEmits(["areaChanged"]);
 
 const areas = ref(null);
 const currentAreaName = ref("");
@@ -48,6 +49,7 @@ watch(currentArea, async (newArea) => {
     }
     // TODO: check view is not null, maybe fire event instead
     props.view.fit(newArea.feature.getGeometry(), {duration: 800});
+    emit('areaChanged', newArea.name);
     layers.value = await loadLayers(newArea.name);
 });
 

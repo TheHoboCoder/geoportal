@@ -14,7 +14,7 @@ class DrawLineView(CommandView):
     description = "Рисует линию между двумя точками"
     alias = "Рисование линии"
 
-    def handler(self, validated_data):
+    def handler(self, validated_data, area, area_bbox_poly):
         layers = [
             LayerPO(name="layer_1",
                     alias="Результат выполнения команды",
@@ -60,7 +60,7 @@ class StylingPrimerView(CommandView):
     COLOR_START = (217, 75, 39)
     COLOR_END = (344, 68, 39)
 
-    def handler(self, validated_data):
+    def handler(self, validated_data, area, area_bbox_poly):
         polygon = validated_data["polygon"]
         # создаем шкалу цвета с помощью класса RangeConverter
         color_scale = RangeConverter([((0, len(polygon.coords[0]) - 1),
@@ -97,7 +97,7 @@ class OverpassPrimerView(CommandView):
     description = "пример использования OverpassAPI"
     alias = "Overpass API"
 
-    def handler(self, validated_data):
+    def handler(self, validated_data, area, area_bbox_poly):
         x_s = sorted((validated_data["bbox_left"][0], validated_data["bbox_right"][0]))
         y_s = sorted((validated_data["bbox_left"][1], validated_data["bbox_right"][1]))
         bounding_poly = Polygon.from_bbox((x_s[0], y_s[0], x_s[1], y_s[1]))
