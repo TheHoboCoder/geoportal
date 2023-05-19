@@ -57,6 +57,10 @@ class ModulesList:
     def contains(self, module_name):
         return module_name in self.__module_dict
     
+    def remove_module(self, module_name):
+        remove_module_dir(module_name)
+        del self.__module_dict[module_name]
+    
     def __getitem__(self, module_name):
         if module_name not in self.__module_dict:
             self.install_module(module_name)

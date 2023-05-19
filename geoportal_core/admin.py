@@ -25,11 +25,11 @@ class GISModuleAdmin(admin.ModelAdmin):
     def delete_queryset(self, request, queryset):
         with transaction.atomic():
             for module in queryset:
-                module.remove_dir()
+                module.remove_mod()
                 module.delete()
 
     def delete_model(self, request, obj):
-        obj.remove_dir()
+        obj.remove_mod()
         super().delete_model(request, obj)
 
 

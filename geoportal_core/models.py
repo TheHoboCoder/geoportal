@@ -41,8 +41,8 @@ class GISModule(models.Model):
         if is_created:
             self.import_data()
 
-    def remove_dir(self):
-        remove_module_dir(self.name)
+    def remove_mod(self):
+        MODULES.remove_module(self.name)
             
     class Meta:
         verbose_name = "Модуль"
