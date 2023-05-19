@@ -28,8 +28,12 @@ class GISModule(models.Model):
         schema = MODULES[self.name].schema
         for area in map(lambda t: Area.from_po(po=t, module=self), schema.areas):
             area.save()
-        for layer in map(lambda t: Layer.from_po(po=t, module=self), schema.layers):
-            layer.save()
+        for layer in schema.layers:
+            layer_model = Layer.from_po(po=layer, module=self)
+            layer_model.save()
+            if layer.layer_content is not None:
+                for feature in layer.layer_content.get_objects():
+                    VectorFeature.from_po(feature, layer_model, layer_model.area).save()
 
     def save(self, *args, **kwargs):
         is_created = self.pk is None
@@ -154,7 +158,7 @@ class VectorFeature(Feature):
         return cls(name=po.name,
                    layer=layer, 
                    area=area, 
-                   datetime=po.datetime,
+                   datetime=po.date,
                    properties=po.properties,
                    geometry=GeometryCollection(po.geometry))
     

@@ -1,8 +1,10 @@
 from .views import DrawLineView, StylingPrimerView, OverpassPrimerView
-from common.models import AreaPO, LayerPO
+from common.models import AreaPO, LayerPO, FileLayerContent
 from common.commands import CommandList
 from common.schema import Schema
 from common.styling import VectorStyle, FillStyle, StrokeStyle
+from pathlib import Path
+import os
 
 COMMANDS = CommandList(
     (DrawLineView(),
@@ -12,9 +14,11 @@ COMMANDS = CommandList(
     )
 )
 
+# путь к папке с файлами
+PATH = os.path.join(Path(__file__).resolve().parent, "assets")
+
 SCHEMA = Schema(
 
- # TODO: импортирование областей из geojson / shapefile
     areas=(AreaPO(name="hibins", 
                   alias="Хибины", 
                   bbox=(32.7172, 67.3483, 34.6289,  67.97463)),
@@ -37,6 +41,28 @@ SCHEMA = Schema(
                         VectorStyle(fill=FillStyle('rgba(131, 122, 235, 0.4)'),
                                     stroke=StrokeStyle('rgb(131, 122, 235)', 2))
                      ]), 
+
+            # пример импорта векторных данных из файлов
+            LayerPO(name="import_json",
+                    ordering=3,
+                    alias="Импортированный слой",
+                    # для импортированных слоев обязательно нужно указывать area
+                    area="hibins",
+                    layer_content=FileLayerContent(PATH+"/sample_geojson.json")
+                    ),
+
+            # для файлов, которые содержат несколько слоев, можно указать номер слоя
+            # c помощью параметра layer_index
+            #  или импортировать все слои при помощи метода read_all_layers()
+            #  (в этом случае надо их добавить к существующим слоям при помощи .extend())
+
+            LayerPO(name="import_sph",
+                    ordering=4,
+                    alias="Импортированный слой 2",
+                    area="hibins",
+                    layer_content=FileLayerContent(PATH+"/shapefile/sample_shapefile.shp")
+                    ),
+
 
             LayerPO(name="vector_layer_1",
                     ordering=1,

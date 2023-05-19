@@ -1,5 +1,7 @@
 from datetime import datetime
 from abc import ABC, abstractmethod
+from django.contrib.gis.gdal.datasource import DataSource
+import requests
 import enum
 
 class FeaturePO:
@@ -15,7 +17,7 @@ class FeaturePO:
         self.name = name
         self.date = date
 
-
+# TODO: areas
 class VectorFeaturePO(FeaturePO):
     def __init__(self, 
                  name: str, 
@@ -188,41 +190,94 @@ class ExternalLayerContent(BaseVectorLayerContent, ABC):
     """
     Контент слоя, который хранится в заданном формате во внешних источниках (url, файл и тд.)
     """
-    def __init__(self, format=Formats.GEOJSON, srid=4326, styling_function=None):
+    def __init__(self, 
+                 format=Formats.GEOJSON, 
+                 srid=4326, 
+                 layer_index=0,
+                 styling_function=None,):
         """
         Args:
             format (Formats, optional): формат. Defaults to Formats.GEOJSON.
             srid (int, optional): Код проекции данных. По дефолту 4326 - неспроецированные данные.
+            layer_index (int): индекс слоя (для форматов, поддерживающих несколько слоев). Дефолт: 0
         """
         super().__init__(styling_function)
         self.format = format
-        self.__converted = []
         self.srid = srid
+        self.__converted = []
+        self.layer_index = layer_index
 
-    # загружает данные и преобразовывает их в список VectorFeature
     @abstractmethod
-    def convert(self):
-        pass
+    def get_data_source(self) -> DataSource:
+        if self.format == Formats.OVERPASS:
+            raise NotImplementedError("reading overpass on back-end is currently not supported")
 
+    def convert(self, layer):
+        res = []
+        for feature in layer:
+            properties = {field.name: field.value for field in feature}
+            feature_name = f"{feature.layer_name}_{feature.fid}"
+            # TODO: datetime 
+            if "name" in properties:
+                feature_name = properties["name"]
+                del properties["name"]
+            geometry = (feature.geom.geos, )
+            if feature.geom_type == 'GeometryCollection':
+                geometry = tuple(feature.geom.geos)
+            res.append(VectorFeaturePO(feature_name, properties, geometry))
+        return res
+    
+    # читает все слои и возвращает список LayerPO
+    def read_all_layers(self):
+        ds = self.get_data_source()
+        res = []
+        for i in range(0, ds.layer_count):
+            res.append(LayerPO(
+                name=ds[i].name,
+                styling_function=self.styling_function,
+                layer_content=self.convert(ds[i])
+            ))
+        return res
+        
     def get_objects(self):
         if len(self.__converted) == 0:
-            self.__converted = self.convert()
-        return self.__converted 
+            self.__converted = self.convert(self.get_data_source()[self.layer_index])
+        return self.__converted
 
 
 class URLLayerContent(ExternalLayerContent):
-    def __init__(self, url: str, format=Formats.GEOJSON, srid=4326):
+    def __init__(self, url: str, 
+                 format=Formats.GEOJSON, 
+                 srid=4326, 
+                 layer_index=0,
+                 styling_function=None):
         """
         Векторные данные, доступные по url
         """
-        super().__init__(format, srid)
+        super().__init__(format, srid, layer_index, styling_function)
         self.url = url
 
-    def convert(self):
-        # TODO: загрузка по url, конвертация
-        raise NotImplementedError("в разработке")
+    def get_data_source(self):
+        response = requests.get(self.url)
+        if response.status_code != 200:
+            raise Exception(f"can't access {self.url}: status {response.status_code}")
+        return DataSource(response.text)
     
-#TODO: FileLayerContent
+class FileLayerContent(ExternalLayerContent):
+    def __init__(self, file_path: str, 
+                 format=Formats.GEOJSON, 
+                 srid=4326, 
+                 layer_index=0,
+                 styling_function=None):
+        """
+        Векторные данные, доступные по url
+        """
+        super().__init__(format, srid, layer_index, styling_function)
+        self.file_path = file_path
+
+    def get_data_source(self):
+        super().get_data_source()
+        return DataSource(self.file_path)
 
 
 
