@@ -3,6 +3,11 @@ from abc import ABC, abstractmethod
 from django.contrib.gis.gdal.datasource import DataSource
 import requests
 import enum
+from django.core.files.base import ContentFile
+from .utils import RangeConverter
+from io import BytesIO
+import numpy as np
+from PIL import Image
 
 class FeaturePO:
     """
@@ -54,11 +59,63 @@ class VectorFeaturePO(FeaturePO):
             self.styles = self.styling_function(self)
 
 class RasterFeaturePO(FeaturePO):
-    """Растровые пространственные данные (в разработке)
+    """Растровые пространственные данные
     """
-    def __init__(self, file, date: datetime = None):
-        super().__init__(date)
+    def __init__(self, 
+                 name: str,
+                 extent, 
+                 file: ContentFile, 
+                 date: datetime = None):
+        """
+        Args:
+            name (str): Название
+            extent (область): формат (xmin, ymin, xmax, ymax)
+            file (ImageFile): файл с изображением
+            date (datetime, optional): дата и время. Defaults to None.
+        """
+        super().__init__(name, date)
+        self.extent = extent
         self.file = file
+
+    @staticmethod
+    def image_from_data(color_converter: RangeConverter, 
+                        data_matrix: np.array,
+                        image_mode: str,
+                        min_val: int,
+                        max_val: int) -> ContentFile:
+        """Cоздает ImageFile из матрицы данных data_matrix. 
+            Значения в матрице будут заменены на цвет согласно color_converter.
+            Для ускорения работы все значения в матрице округляются и приводятся к int.
+            Изображение будет создано в формате .png
+
+        Args:
+            color_converter (RangeConverter): шкала цвета.
+            data_matrix (np.array): матрица numpy
+            image_mode (str): Режим изображения: RGB, RGBA, HSV, ... (cм. Pillow/Modes)
+                NOTE: размерность возвращаемого color_converter значения должна соотвествовать режиму
+            min_val (int): Минимально возможное значение в data_matrix
+            max_val (_type_): Максимально возможное значение в data_matrix
+
+        Returns:
+            ImageFile: файл изображения
+        """
+        pallete = np.array([color_converter.convert(val) for val in range(min_val, max_val+1)])
+        res = pallete[(np.round(data_matrix).flatten() - min_val).astype(int)]
+        # putdata не хочет принимать np.array, нужно его предварительно сконвертировать в обычный список
+        res = np.round(res).astype(int).T
+        res = list(zip(*res))
+        image = Image.new(image_mode, data_matrix.shape[::-1])
+        image.putdata(res)
+        if image_mode != 'RGB' and image_mode != 'RGBA':
+            image = image.convert('RGB')
+        buffer = BytesIO()
+        image.save(buffer, format='png')
+        image.close()
+        image_file = ContentFile(buffer.getvalue())
+        buffer.close()
+        return image_file
+        
+
 
 class AreaPO:
     def __init__(self, name: str, bbox: tuple, alias:str = ""):
@@ -105,9 +162,9 @@ class LayerPO:
                 если для векторных объектов в layer_content не указан свой стиль и styling_function.
             styling_function - Функция для вычисления стиля. 
                 Если у layer_content она не указана, то будет к нему применена
-            layer_content (BaseVectorLayerContent|None): Контент слоя
-                Может быть подклассом BaseVectorLayerContent или списком объектов VectorFeaturePO.
-                Во втором случае автоматически будет создан VectorLayerContent
+            layer_content (BaseVectorLayerContent|RasterLayerContent|None): Контент слоя
+                Может быть подклассом BaseVectorLayerContent, RasterLayerContent или списком объектов VectorFeaturePO.
+                В последнем случае автоматически будет создан VectorLayerContent
         """
         self.name = name
         self.area = area
@@ -129,6 +186,12 @@ class LayerPO:
             return self.layer_content.styling_function
         return None
 
+#TODO: refactor
+class RasterLayerContent:
+    def __init__(self, raster_objects, styling_function=None):
+        self.raster_objects = raster_objects
+        self.styling_function = styling_function
+         
 class BaseVectorLayerContent(ABC):
     def __init__(self, styling_function=None):
         self.styling_function = styling_function

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import GISModule, Area, Layer, VectorFeature
+from .models import GISModule, Area, Layer, VectorFeature, RasterFeature
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from django.urls import reverse, resolve
 from common.models import URLLayerContent
@@ -29,9 +29,12 @@ class LayerSerializer(serializers.ModelSerializer):
         module_name = path_kwargs["module_name"]
         path_kwargs["layer_name"] = instance.name
         res = super().to_representation(instance)
-        layer_content = URLLayerContent(req.build_absolute_uri(reverse("layer_content", kwargs=path_kwargs)))
-        res["layer_content"] = URLLayerContentSerializer(layer_content).data
-        res["styles"] = serialize_styles(MODULES[module_name].layer_styles[instance.name])
+        path = req.build_absolute_uri(reverse("layer_content", kwargs=path_kwargs))
+        if instance.is_vector():
+            res["layer_content"] = URLLayerContentSerializer(URLLayerContent(path)).data
+            res["styles"] = serialize_styles(MODULES[module_name].layer_styles[instance.name])
+        else:
+           res["layer_content"] = {"type": "url", "url": path} 
         return res
 
 class VectorFeatureSerializer(GeoFeatureModelSerializer):
@@ -52,3 +55,14 @@ class VectorFeatureSerializer(GeoFeatureModelSerializer):
             styles = module_info.layer_style_functions[layer_name](instance.to_po())
             p["styles"] = serialize_styles(styles)
         return p
+    
+
+class RasterFeatureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RasterFeature
+        fields = ['name', 'datetime', 'raster_file']
+
+    def to_representation(self, instance):
+        res = super().to_representation(instance)
+        res["extent"] = instance.extent.extent
+        return res

@@ -4,6 +4,7 @@
 *.pyc
 __pycache__
 modules/*
+media/*
 zipped
 migrations
 staticfiles

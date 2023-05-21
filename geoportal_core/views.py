@@ -55,8 +55,7 @@ class LayerContentListView(ListAPIView):
         layer = models.Layer.objects.path_get(self.kwargs)
         feature_cls = models.VectorFeature if layer.is_vector() else models.RasterFeature
         self.pagination_class = GeoJsonPagination if layer.is_vector() else None
-        # TODO:
-        self.serializer_class = serializers.VectorFeatureSerializer if layer.is_vector() else None
+        self.serializer_class = serializers.VectorFeatureSerializer if layer.is_vector() else serializers.RasterFeatureSerializer
 
         features_filtered = feature_cls.objects.filter_features(
                                                        self.kwargs["module_name"],

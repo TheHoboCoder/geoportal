@@ -62,7 +62,8 @@ class LayerAdmin(admin.ModelAdmin):
         if db_field.name == "area" and not request.user.is_superuser:
             kwargs["queryset"] = models.Area.objects.filter(module__owner=request.user)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
-    
+
+
        
 @admin.register(models.VectorFeature)
 class VectorFeatureAdmin(admin.ModelAdmin):
@@ -79,6 +80,23 @@ class VectorFeatureAdmin(admin.ModelAdmin):
         if db_field.name == "area" and not request.user.is_superuser:
             kwargs["queryset"] = models.Area.objects.filter(module__owner=request.user)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+#TODO: refactor
+@admin.register(models.RasterFeature)
+class RasterFeatureAdmin(admin.ModelAdmin):
+
+    def get_queryset(self, request):
+        if request.user.is_superuser:
+            return models.RasterFeature.objects.all()
+        return models.RasterFeature.objects.filter(area__module__owner=request.user)
+    
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "layer" and not request.user.is_superuser:
+            kwargs["queryset"] = models.Layer.objects.filter(module__owner=request.user, layer_type='V')
+        if db_field.name == "area" and not request.user.is_superuser:
+            kwargs["queryset"] = models.Area.objects.filter(module__owner=request.user)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 
 
 

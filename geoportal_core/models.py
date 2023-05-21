@@ -6,7 +6,6 @@ from django.db import transaction
 from django.db.models import Q
 from common import models as c_models
 from common.internal.modules import MODULES
-from common.internal.module_filesystem import remove_module_dir
     
 class GISModule(models.Model):
     """ Модуль для установки
@@ -32,8 +31,15 @@ class GISModule(models.Model):
             layer_model = Layer.from_po(po=layer, module=self)
             layer_model.save()
             if layer.layer_content is not None:
-                for feature in layer.layer_content.get_objects():
-                    VectorFeature.from_po(feature, layer_model, layer_model.area).save()
+                if layer.is_vector:
+                    for feature in layer.layer_content.get_objects():
+                        VectorFeature.from_po(feature, layer_model, layer_model.area).save()
+                else:
+                    for feature in layer.layer_content.raster_objects:
+                        po = RasterFeature.from_po(feature, layer_model, layer_model.area)
+                        #TODO: extension
+                        po.raster_file.save(f"{self.name}/rasters/{po.name}.png", feature.file, save=True)
+                        po.save()  
 
     def save(self, *args, **kwargs):
         is_created = self.pk is None
@@ -174,7 +180,20 @@ class VectorFeature(Feature):
         verbose_name = "Векторные объекты"
 
 class RasterFeature(Feature):
-    raster_filepath = models.FilePathField()
+    extent = gis_models.PolygonField(verbose_name="Ограничивающий прямоугольник", null=True)
+    raster_file = models.ImageField(verbose_name="Файл")
+
+    @classmethod
+    def from_po(cls, po: c_models.RasterFeaturePO, layer, area):
+        return cls(name=po.name,
+                   layer=layer, 
+                   area=area, 
+                   datetime=po.date,
+                   extent=Polygon.from_bbox(po.extent))
+
+
+    
+
 
 
 

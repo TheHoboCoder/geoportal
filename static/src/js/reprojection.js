@@ -1,7 +1,7 @@
 import GeoJSON from 'ol/format/GeoJSON.js';
 import GML3 from 'ol/format/GML3.js';
 import WKT from 'ol/format/WKT.js';
-import {transform} from 'ol/proj.js';
+import { transform, transformExtent } from 'ol/proj.js';
 import { overpassJsonToGeojson } from './converters';
 
 export const backendSRID = 'EPSG:4326';
@@ -16,6 +16,10 @@ const wktWriter = new WKT();
 
 export function reproject(coords){
     return transform(coords, backendSRID, mapSRID);
+}
+
+export function reprojectExtent(extent){
+  return transformExtent(extent, backendSRID, mapSRID);
 }
 
 export function readFeatures(source, sourceFormat, sourceSrid){

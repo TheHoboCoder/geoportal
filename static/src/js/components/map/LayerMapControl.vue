@@ -3,7 +3,7 @@ import { ref, computed, watch } from "vue";
 import VisibilityControl from '../utils/VisibilityControl.vue';
 import CardExpand from '../utils/CardExpand.vue';
 import { getTopLeft } from 'ol/extent';
-import { readFeatures,  backendSRID, mapSRID } from "../../reprojection.js"
+import { readFeatures,  backendSRID, mapSRID, reprojectExtent } from "../../reprojection.js"
 import { createStyles, MyCircle } from "../../converters.js"
 import { circular } from 'ol/geom/Polygon';
 import { transform } from 'ol/proj.js';
@@ -15,9 +15,11 @@ const props = defineProps({
 });
 
 const vectorLayers = ref([]);
+const rasterLayers = ref([]);
 
 watch(() => props.layers, async (newLayers) => {
     let result_layers = [];
+    let raster_layers = [];
     for(const l of newLayers){
         l.visible = true;
         if(l.layer_type == 'V'){
@@ -81,9 +83,26 @@ watch(() => props.layers, async (newLayers) => {
             result_layers.push(l);
         }
         else{
-        //TODO
+          // TODO: refactor
+          let features = []
+          if(l.layer_content.type == 'url'){
+            const response = await fetch(l.layer_content.url);
+            if(!response.ok){
+                throw new Error(`unable to load ${l.layer_content.url}, error ${response.status}`);
+            }
+            features = await response.json();
+          }
+          else{
+            features = l.layer_content.rasters;
+          }
+          for(const feature of features){
+            feature.extent = reprojectExtent(feature.extent);
+          }
+          l.features = features;
+          raster_layers.push(l);
         }
     }
+    rasterLayers.value = raster_layers;
     vectorLayers.value = result_layers;
 }, { immediate: true });
 
@@ -92,11 +111,21 @@ const visibleVectorLayers = computed(() => {
     return vectorLayers.value.filter(layer => layer.visible);
 });
 
+const visibleRasterLayers = computed(() => {
+    return rasterLayers.value.filter(layer => layer.visible);
+});
+
 const vectorsIsVisible = ref(true);
+const rastersIsVisible = ref(true);
 
 function changeGroupVisibility(){
     vectorsIsVisible.value = !vectorsIsVisible.value;
     vectorLayers.value.forEach(l => l.visible = vectorsIsVisible.value);
+}
+
+function changeRasterVisibility(){
+    rastersIsVisible.value = !rastersIsVisible.value;
+    rasterLayers.value.forEach(l => l.visible = rastersIsVisible.value);
 }
 
 </script>
@@ -141,6 +170,25 @@ function changeGroupVisibility(){
                 </ul>
             </VisibilityControl>
 
+            <VisibilityControl
+                title="Растровые слои"
+                :expanded="true"
+                :visible="rastersIsVisible"
+                @visibilityChanged="changeRasterVisibility">
+
+                <ul class="list-group list-group-flush">
+                    <li v-for="l in rasterLayers" :key="l.name" class="list-group-item">
+                        <VisibilityControl 
+                             :title="l.alias" 
+                             :visible="l.visible"
+                             :expanded="false"
+                             @visibilityChanged="() => l.visible = !l.visible">
+                        </VisibilityControl>
+                    </li>
+                </ul>
+
+            </VisibilityControl>
+
         </CardExpand>
     </SafeTeleport>
 
@@ -155,5 +203,14 @@ function changeGroupVisibility(){
             </ol-overlay>
         </ol-source-vector>
     </ol-vector-layer>
+
+    <ol-image-layer v-for="layer in visibleRasterLayers" :key="layer.name">
+        <ol-source-image-static
+            v-for="feature in layer.features"
+            :key="feature.name"
+            :url="feature.raster_file"
+            :imageExtent="feature.extent"
+        ></ol-source-image-static>
+    </ol-image-layer>
 
 </template>
