@@ -192,6 +192,15 @@ function changeRasterVisibility(){
         </CardExpand>
     </SafeTeleport>
 
+    <ol-image-layer v-for="layer in visibleRasterLayers" :key="layer.name">
+        <ol-source-image-static
+            v-for="feature in layer.features"
+            :key="feature.name"
+            :url="feature.raster_file"
+            :imageExtent="feature.extent"
+        ></ol-source-image-static>
+    </ol-image-layer>
+
     <ol-vector-layer v-for="layer in visibleVectorLayers" :key="layer.name">
         <ol-source-vector :features="layer.features">
             <ol-overlay v-for="feature in layer.features" 
@@ -203,14 +212,5 @@ function changeRasterVisibility(){
             </ol-overlay>
         </ol-source-vector>
     </ol-vector-layer>
-
-    <ol-image-layer v-for="layer in visibleRasterLayers" :key="layer.name">
-        <ol-source-image-static
-            v-for="feature in layer.features"
-            :key="feature.name"
-            :url="feature.raster_file"
-            :imageExtent="feature.extent"
-        ></ol-source-image-static>
-    </ol-image-layer>
 
 </template>
