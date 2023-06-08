@@ -6,8 +6,8 @@ cd /webapps/geoportal_project/geoportal/geoportal
 mv settings.py settings/base.py
 mv  /tmp/modules ../modules
 
-chown -r geoportal:www-data ../modules
-chmod -r g+w ../modules
+chown -R geoportal:www-data ../modules
+chmod -R g+w ../modules
 
 su -l geoportal << EOF
 echo "building frontend"
