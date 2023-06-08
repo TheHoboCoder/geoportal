@@ -3,6 +3,7 @@
 
 {% block title %}{{ module.alias }}{% endblock %}
 {% block head %}
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
   {% vite_hmr_client %}
   {% vite_asset 'js/main.js' %}
 {% endblock %}
