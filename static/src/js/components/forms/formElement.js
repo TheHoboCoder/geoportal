@@ -18,6 +18,10 @@ function formInput(fieldDef, defaultAttribs){
             break;
     }
 
+    if(fieldDef.type == "number"){
+        defaultAttribs["step"] = "0.001"
+    }
+
     defaultAttribs.type = field_type;
     defaultAttribs.class = field_type == "checkbox" ? "form-check-input" : "form-control";
     let mapping = {
