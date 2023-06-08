@@ -35,7 +35,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 MODULE_PATH = os.path.join(BASE_DIR, 'modules')
 if not os.path.exists(MODULE_PATH):
-    MODULE_PATH = os.path.join(BASE_DIR.parent, 'modules')
+    BASE_DIR = BASE_DIR.parent
+    MODULE_PATH = os.path.join(BASE_DIR, 'modules')
 if MODULE_PATH not in sys.path:
     sys.path.insert(0, MODULE_PATH)
 
