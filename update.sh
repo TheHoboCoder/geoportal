@@ -4,7 +4,7 @@ rm -r /webapps/geoportal_project/geoportal/modules
 cp -r * /webapps/geoportal_project/geoportal
 cd /webapps/geoportal_project/geoportal/geoportal
 mv settings.py settings/base.py
-mv  /tmp/modules ../modules
+mv  /tmp/modules ../
 
 chown -R geoportal:www-data ../modules
 chmod -R g+w ../modules
