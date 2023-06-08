@@ -1,9 +1,13 @@
 #!/bin/bash
 cp -r /webapps/geoportal_project/geoportal/modules /tmp/
+rm -r /webapps/geoportal_project/geoportal/modules
 cp -r * /webapps/geoportal_project/geoportal
 cd /webapps/geoportal_project/geoportal/geoportal
 mv settings.py settings/base.py
-mv /tmp/modules ../
+mv  /tmp/modules ../modules
+
+chown -r geoportal:www-data ../modules
+chmod -r g+w ../modules
 
 su -l geoportal << EOF
 echo "building frontend"
