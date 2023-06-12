@@ -19,8 +19,7 @@ def unzip_file(file, module_name, path=settings.MODULE_PATH):
         zip_base_dir = Path(name).parts[0]
         # there's root dir: archive/root_dir/<zipped_files>
         if zip_base_dir != Path(name).name:
-            # TODO: bug: can replace filename part
-            create_name = name.replace(zip_base_dir, module_name)
+            create_name = os.path.join(module_name, *Path(name).parts[1:])
         else:
         # all files placed on same level: archive/<zipped_files>
             create_name = os.path.join(module_name, name)
