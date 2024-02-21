@@ -106,8 +106,6 @@ DATABASES = {
     }
 }
 
-DJANGO_VITE_ASSETS_PATH = os.path.join(BASE_DIR, "static", "dist")
-DJANGO_VITE_DEV_MODE = True
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -147,10 +145,7 @@ STATIC_URL = '/static/'
 # for test vite prod
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-    DJANGO_VITE_ASSETS_PATH
-]
+STATICFILES_DIRS = []
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
